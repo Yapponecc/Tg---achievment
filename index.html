@@ -55,6 +55,8 @@
         inset 0 0 0 2px var(--frame-dark),
         0 10px 32px rgba(0, 0, 0, 0.42),
         0 0 22px var(--glow);
+      outline: 1px solid rgba(203, 224, 245, 0.2);
+      outline-offset: -4px;
       animation: intro 1120ms cubic-bezier(.18, .82, .2, 1) both;
     }
 
@@ -94,20 +96,48 @@
     .title {
       margin: 0;
       color: var(--title);
-      font-size: clamp(15px, 2.1vw, 30px);
-      line-height: 1.2;
+      font-size: clamp(13px, 1.8vw, 22px);
+      line-height: 1.24;
       text-shadow: 0 2px 0 rgba(74, 66, 20, 0.95);
-      letter-spacing: 0.4px;
+      letter-spacing: 0.25px;
+    }
+
+    .tops-row {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .top-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(185, 214, 242, 0.34);
+      background: rgba(16, 28, 44, 0.64);
+      color: #dcecff;
+      font-size: clamp(7px, 0.74vw, 10px);
+      line-height: 1.2;
+      white-space: nowrap;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .top-chip-label {
+      color: #7bc8ff;
     }
 
     .line {
       margin-top: 0;
       color: var(--text);
-      font-size: clamp(12px, 1.45vw, 23px);
-      line-height: 1.35;
+      font-size: clamp(10px, 1.18vw, 16px);
+      line-height: 1.5;
       text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
       transition: opacity 520ms ease, transform 520ms ease, filter 520ms ease;
       will-change: opacity, transform, filter;
+      font-family: "Press Start 2P", monospace;
+      letter-spacing: 0.15px;
     }
 
     .line-row {
@@ -128,13 +158,14 @@
       background: rgba(60, 145, 215, 0.16);
       box-shadow: 0 0 4px rgba(69, 184, 255, 0.2);
       color: #d7ebff;
-      font-size: clamp(9px, 0.95vw, 15px);
-      line-height: 1.1;
+      font-size: clamp(8px, 0.88vw, 12px);
+      line-height: 1.25;
       white-space: nowrap;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
       flex: 0 0 auto;
       opacity: 0.95;
       justify-self: end;
+      font-family: "Press Start 2P", monospace;
     }
 
     .tg-tag svg {
@@ -196,11 +227,16 @@
       }
 
       .line {
-        font-size: clamp(10px, 2.7vw, 14px);
+        font-size: clamp(9px, 2.4vw, 12px);
+        line-height: 1.45;
       }
 
       .line-row {
         margin-top: 8px;
+      }
+
+      .top-chip {
+        font-size: 7px;
       }
     }
 
@@ -238,17 +274,22 @@
       }
 
       .title {
-        font-size: clamp(11px, 4.4vw, 14px);
+        font-size: clamp(10px, 4.1vw, 12px);
       }
 
       .line {
-        font-size: clamp(10px, 3.9vw, 13px);
-        line-height: 1.3;
+        font-size: clamp(8px, 3.2vw, 10px);
+        line-height: 1.45;
       }
 
       .tg-tag {
-        font-size: 11px;
-        padding: 4px 6px;
+        font-size: 8px;
+        padding: 4px 5px;
+      }
+
+      .top-chip {
+        font-size: 6px;
+        padding: 3px 5px;
       }
     }
   </style>
@@ -272,6 +313,10 @@
 
     <div>
       <h1 class="title">Достижение получено!</h1>
+      <div class="tops-row">
+        <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span> —</span>
+        <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span> —</span>
+      </div>
       <div class="line-row">
         <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
         <span class="tg-tag" id="tgTag" aria-label="Telegram">
@@ -286,6 +331,19 @@
 
   <script>
     const tg = "@yapponecc1";
+    const liveSocketConfig = {
+      enabled: true,
+      url: "ws://localhost:21213/",
+      reconnectMs: 2500
+    };
+
+    // real = как есть из события, alias = замена по словарю, translit = авто-транслит кириллицы
+    const nicknameDisplayMode = "alias";
+    const nicknameAliases = {
+      "@yapponecc1": "@yapponecc1"
+      // "оригинальный_ник": "КрасивыйНик"
+    };
+
     const lines = [
       "35 лет :D • Уже зашел? Мега хорош!",
       "Сервер уже в Telegram"
@@ -297,9 +355,317 @@
 
     const textEl = document.getElementById("rotatingText");
     const tgName = document.getElementById("tgName");
+    const topStreakEl = document.getElementById("topStreak");
+    const topGiftEl = document.getElementById("topGift");
     let idx = 0;
+    let liveSocket = null;
+    let reconnectTimer = null;
+    const giftTotalsByUser = new Map();
+    const streakBestByUser = new Map();
 
-    tgName.textContent = tg;
+    function translitRuToLat(input) {
+      const map = {
+        а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh", з: "z", и: "i", й: "y",
+        к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f",
+        х: "kh", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya"
+      };
+      return input.split("").map((char) => {
+        const lower = char.toLowerCase();
+        if (!map[lower]) return char;
+        const value = map[lower];
+        return char === lower ? value : value.charAt(0).toUpperCase() + value.slice(1);
+      }).join("");
+    }
+
+    function formatNick(nick) {
+      if (nicknameDisplayMode === "alias") {
+        return nicknameAliases[nick] || nick;
+      }
+      if (nicknameDisplayMode === "translit") {
+        return translitRuToLat(nick);
+      }
+      return nick;
+    }
+
+    tgName.textContent = formatNick(tg);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const tops = {
+      streakNick: urlParams.get("streakNick") || "",
+      streakCount: Number(urlParams.get("streakCount") || 0),
+      giftNick: urlParams.get("giftNick") || "",
+      giftCoins: Number(urlParams.get("giftCoins") || 0)
+    };
+
+    function renderTops() {
+      const streakNick = tops.streakNick ? formatNick(tops.streakNick) : "—";
+      const giftNick = tops.giftNick ? formatNick(tops.giftNick) : "—";
+      const streakValue = tops.streakCount > 0 ? " x" + tops.streakCount : "";
+      const giftValue = tops.giftCoins > 0 ? " " + tops.giftCoins + "c" : "";
+      topStreakEl.innerHTML = "<span class='top-chip-label'>STREAK</span> " + streakNick + streakValue;
+      topGiftEl.innerHTML = "<span class='top-chip-label'>GIFT</span> " + giftNick + giftValue;
+    }
+
+    // Внешний хук: можно дергать из TikFinity/моста реальными никами
+    window.updateAchievementTops = (payload = {}) => {
+      if (typeof payload.streakNick === "string") tops.streakNick = payload.streakNick;
+      if (typeof payload.streakCount === "number") tops.streakCount = payload.streakCount;
+      if (typeof payload.giftNick === "string") tops.giftNick = payload.giftNick;
+      if (typeof payload.giftCoins === "number") tops.giftCoins = payload.giftCoins;
+      renderTops();
+    };
+
+    renderTops();
+
+    function asNumber(value) {
+      const num = Number(value);
+      return Number.isFinite(num) ? num : 0;
+    }
+
+    function firstNonEmpty(...values) {
+      for (const value of values) {
+        if (value !== undefined && value !== null && value !== "") return value;
+      }
+      return "";
+    }
+
+    function getDeep(obj, path) {
+      if (!obj || typeof obj !== "object") return undefined;
+      const keys = path.split(".");
+      let current = obj;
+      for (const key of keys) {
+        if (!current || typeof current !== "object") return undefined;
+        current = current[key];
+      }
+      return current;
+    }
+
+    function tryParseJson(value) {
+      if (typeof value !== "string") return null;
+      const text = value.trim();
+      if (!text || (!text.startsWith("{") && !text.startsWith("["))) return null;
+      try {
+        return JSON.parse(text);
+      } catch {
+        return null;
+      }
+    }
+
+    function normalizeMessage(raw) {
+      let msg = raw;
+      if (typeof msg === "string") {
+        const parsed = tryParseJson(msg);
+        if (!parsed) return null;
+        msg = parsed;
+      }
+      if (!msg || typeof msg !== "object") return null;
+
+      if (typeof msg.data === "string") {
+        const parsed = tryParseJson(msg.data);
+        if (parsed) msg.data = parsed;
+      }
+      if (typeof msg.eventData === "string") {
+        const parsed = tryParseJson(msg.eventData);
+        if (parsed) msg.eventData = parsed;
+      }
+      if (msg.data && typeof msg.data === "object" && typeof msg.data.eventData === "string") {
+        const parsed = tryParseJson(msg.data.eventData);
+        if (parsed) msg.data.eventData = parsed;
+      }
+      return msg;
+    }
+
+    function detectEventType(msg, payload) {
+      const rawType = firstNonEmpty(
+        msg.eventName,
+        msg.event,
+        msg.type,
+        msg.name,
+        msg.action,
+        msg.topic,
+        getDeep(msg, "data.eventName"),
+        getDeep(msg, "data.event"),
+        getDeep(msg, "data.type"),
+        getDeep(msg, "eventData.eventName"),
+        getDeep(msg, "eventData.event"),
+        getDeep(payload, "eventName"),
+        getDeep(payload, "event"),
+        getDeep(payload, "type")
+      );
+      const type = String(rawType || "").toLowerCase();
+
+      if (type.includes("gift")) return "gift";
+      if (type.includes("streak")) return "streak";
+
+      const hasGiftShape = firstNonEmpty(
+        getDeep(payload, "giftName"),
+        getDeep(payload, "giftId"),
+        getDeep(payload, "coins"),
+        getDeep(payload, "diamondCount"),
+        getDeep(payload, "repeatCount")
+      );
+      if (hasGiftShape !== "") return "gift";
+
+      const hasStreakShape = firstNonEmpty(
+        getDeep(payload, "streak"),
+        getDeep(payload, "streakCount"),
+        getDeep(payload, "comboCount")
+      );
+      if (hasStreakShape !== "") return "streak";
+
+      return "";
+    }
+
+    function extractNick(payload) {
+      const raw = firstNonEmpty(
+        getDeep(payload, "nickname"),
+        getDeep(payload, "nickName"),
+        getDeep(payload, "displayName"),
+        getDeep(payload, "username"),
+        getDeep(payload, "userName"),
+        getDeep(payload, "uniqueId"),
+        getDeep(payload, "user.nickname"),
+        getDeep(payload, "user.nickName"),
+        getDeep(payload, "user.displayName"),
+        getDeep(payload, "user.username"),
+        getDeep(payload, "user.userName"),
+        getDeep(payload, "user.uniqueId"),
+        getDeep(payload, "fromUser.nickname"),
+        getDeep(payload, "fromUser.uniqueId"),
+        getDeep(payload, "trigger.nickname"),
+        getDeep(payload, "trigger.username")
+      );
+      return String(raw || "").trim();
+    }
+
+    function extractGiftScore(payload) {
+      const unitCoins = asNumber(firstNonEmpty(
+        getDeep(payload, "coins"),
+        getDeep(payload, "diamondCount"),
+        getDeep(payload, "diamonds"),
+        getDeep(payload, "giftCoins"),
+        getDeep(payload, "gift.diamondCount"),
+        getDeep(payload, "gift.diamond_count"),
+        getDeep(payload, "giftData.value"),
+        getDeep(payload, "value")
+      ));
+      const repeatCount = Math.max(1, asNumber(firstNonEmpty(
+        getDeep(payload, "repeatCount"),
+        getDeep(payload, "repeat_count"),
+        getDeep(payload, "comboCount"),
+        getDeep(payload, "combo"),
+        getDeep(payload, "giftCount"),
+        getDeep(payload, "count"),
+        getDeep(payload, "amount")
+      )) || 1);
+      return unitCoins > 0 ? unitCoins * repeatCount : repeatCount;
+    }
+
+    function extractStreakValue(payload) {
+      return Math.max(1, asNumber(firstNonEmpty(
+        getDeep(payload, "streakCount"),
+        getDeep(payload, "streak"),
+        getDeep(payload, "repeatCount"),
+        getDeep(payload, "repeat_count"),
+        getDeep(payload, "comboCount"),
+        getDeep(payload, "combo")
+      )) || 1);
+    }
+
+    function getTopEntry(map) {
+      let topNick = "";
+      let topValue = 0;
+      map.forEach((value, nick) => {
+        if (value > topValue) {
+          topValue = value;
+          topNick = nick;
+        }
+      });
+      return { nick: topNick, value: topValue };
+    }
+
+    function syncTopFromMaps() {
+      const topGift = getTopEntry(giftTotalsByUser);
+      const topStreak = getTopEntry(streakBestByUser);
+      tops.giftNick = topGift.nick;
+      tops.giftCoins = Math.round(topGift.value);
+      tops.streakNick = topStreak.nick;
+      tops.streakCount = Math.round(topStreak.value);
+      renderTops();
+    }
+
+    function processEventMessage(rawMessage) {
+      const msg = normalizeMessage(rawMessage);
+      if (!msg) return;
+
+      const payload = firstNonEmpty(
+        msg.eventData,
+        getDeep(msg, "data.eventData"),
+        msg.data,
+        msg.payload,
+        msg.args,
+        msg
+      );
+      if (!payload || typeof payload !== "object") return;
+
+      const eventType = detectEventType(msg, payload);
+      if (!eventType) return;
+
+      const nick = extractNick(payload);
+      if (!nick) return;
+
+      if (eventType === "gift") {
+        const score = extractGiftScore(payload);
+        giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
+
+        // В TikTok gifts repeatCount часто соответствует streak-комбо, используем как fallback.
+        const streakFromGift = extractStreakValue(payload);
+        streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
+      }
+
+      if (eventType === "streak") {
+        const streak = extractStreakValue(payload);
+        streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streak));
+      }
+
+      syncTopFromMaps();
+    }
+
+    function scheduleReconnect() {
+      if (!liveSocketConfig.enabled) return;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      reconnectTimer = setTimeout(connectLiveSocket, liveSocketConfig.reconnectMs);
+    }
+
+    function connectLiveSocket() {
+      if (!liveSocketConfig.enabled || !("WebSocket" in window)) return;
+      if (liveSocket && (liveSocket.readyState === WebSocket.OPEN || liveSocket.readyState === WebSocket.CONNECTING)) return;
+
+      try {
+        liveSocket = new WebSocket(liveSocketConfig.url);
+      } catch {
+        scheduleReconnect();
+        return;
+      }
+
+      liveSocket.onmessage = (event) => {
+        processEventMessage(event.data);
+      };
+
+      liveSocket.onclose = () => {
+        scheduleReconnect();
+      };
+
+      liveSocket.onerror = () => {
+        try {
+          liveSocket.close();
+        } catch {
+          scheduleReconnect();
+        }
+      };
+    }
+
+    connectLiveSocket();
 
     function randomDelay() {
       return Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
