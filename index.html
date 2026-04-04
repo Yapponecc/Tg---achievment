@@ -524,6 +524,10 @@
       giftImageUrl: ""
     };
 
+    const knownGiftImages = {
+      rose: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"
+    };
+
     function translitRuToLat(input) {
       const map = {
         а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh", з: "z", и: "i", й: "y",
@@ -556,9 +560,18 @@
 
     tgName.textContent = toMinecraftNick(tg);
 
-    function renderGiftIcon(url) {
+    function getKnownGiftFallbackByName(giftName) {
+      const name = String(giftName || "").toLowerCase().trim();
+      if (!name) return "";
+      if (name.includes("rose") || name.includes("роза")) return knownGiftImages.rose;
+      return "";
+    }
+
+    function renderGiftIcon(url, giftName = "") {
       const normalized = normalizeImageUrl(url);
-      if (!normalized) {
+      const fallbackByName = getKnownGiftFallbackByName(giftName);
+
+      if (!normalized && !fallbackByName) {
         topGiftImageEl.removeAttribute("src");
         topGiftImageEl.style.display = "none";
         topGiftFallbackEl.style.display = "grid";
@@ -567,7 +580,7 @@
         return;
       }
 
-      topGiftImageCandidates = buildImageCandidates(normalized);
+      topGiftImageCandidates = buildImageCandidates(normalized, giftName);
       topGiftImageIdx = 0;
       topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
       topGiftImageEl.style.display = "block";
@@ -665,12 +678,46 @@
       return acc;
     }
 
-    function buildImageCandidates(url) {
+    function buildImageCandidates(url, giftName = "") {
       const direct = normalizeImageUrl(url);
-      if (!direct) return [];
-      const noProto = direct.replace(/^https?:\/\//i, "");
-      const proxy = "https://images.weserv.nl/?url=" + encodeURIComponent(noProto);
-      return [direct, proxy];
+      const result = [];
+
+      function pushCandidate(candidateUrl) {
+        const normalized = normalizeImageUrl(candidateUrl);
+        if (!normalized) return;
+        if (!result.includes(normalized)) result.push(normalized);
+      }
+
+      if (direct) {
+        pushCandidate(direct);
+
+        if (direct.includes("~tplv-obj.image")) {
+          pushCandidate(direct.replace("~tplv-obj.image", "~tplv-obj.webp"));
+          pushCandidate(direct.replace("~tplv-obj.image", ".png~tplv-obj.webp"));
+
+          const resourceVariant = direct.replace(
+            /\/img\/maliva\/webcast-va\/([^\/?~]+)~tplv-obj\.image/i,
+            "/img/maliva/webcast-va/resource/$1.png~tplv-obj.webp"
+          );
+          pushCandidate(resourceVariant);
+        }
+      }
+
+      const fallbackByName = getKnownGiftFallbackByName(giftName);
+      if (fallbackByName) pushCandidate(fallbackByName);
+
+      const withProxy = [];
+      for (const candidate of result) {
+        withProxy.push(candidate);
+        const noProto = candidate.replace(/^https?:\/\//i, "");
+        withProxy.push("https://images.weserv.nl/?url=" + encodeURIComponent(noProto));
+      }
+
+      const unique = [];
+      for (const candidate of withProxy) {
+        if (!unique.includes(candidate)) unique.push(candidate);
+      }
+      return unique;
     }
 
     function renderTops() {
@@ -681,7 +728,7 @@
       giftValueEl.textContent = tops.giftCoins > 0 ? (tops.giftCoins + " coins") : "0 coins";
       giftNameEl.textContent = tops.giftName || "No gifts yet";
 
-      renderGiftIcon(tops.giftImageUrl);
+      renderGiftIcon(tops.giftImageUrl, tops.giftName);
     }
 
     window.updateAchievementTops = (payload = {}) => {
