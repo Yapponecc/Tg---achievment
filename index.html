@@ -104,15 +104,16 @@
 
     .tops-row {
       margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
       gap: 7px;
     }
 
     .top-chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       padding: 4px 7px;
       border-radius: 999px;
       border: 1px solid rgba(185, 214, 242, 0.34);
@@ -122,10 +123,28 @@
       line-height: 1.2;
       white-space: nowrap;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .top-chip-label {
       color: #7bc8ff;
+      flex: 0 0 auto;
+    }
+
+    .top-chip-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    #topStreak {
+      justify-self: start;
+    }
+
+    #topGift {
+      justify-self: end;
     }
 
     .line {
@@ -142,36 +161,41 @@
 
     .line-row {
       margin-top: 10px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 10px;
+      display: block;
     }
 
     .tg-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 8px;
+      padding: 4px 7px;
       border-radius: 999px;
       border: 1px solid rgba(175, 222, 255, 0.5);
       background: rgba(60, 145, 215, 0.16);
       box-shadow: 0 0 4px rgba(69, 184, 255, 0.2);
       color: #d7ebff;
-      font-size: clamp(8px, 0.88vw, 12px);
+      font-size: clamp(7px, 0.72vw, 10px);
       line-height: 1.25;
       white-space: nowrap;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
       flex: 0 0 auto;
       opacity: 0.95;
-      justify-self: end;
+      justify-self: center;
       font-family: "Press Start 2P", monospace;
+      max-width: 45%;
+      overflow: hidden;
     }
 
     .tg-tag svg {
-      width: 12px;
-      height: 12px;
+      width: 10px;
+      height: 10px;
       fill: #ffffff;
+      flex: 0 0 auto;
+    }
+
+    .tg-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .line.is-hiding {
@@ -238,17 +262,33 @@
       .top-chip {
         font-size: 7px;
       }
+
+      .tg-tag {
+        font-size: 7px;
+      }
     }
 
     @media (max-width: 520px) {
-      .line-row {
-        grid-template-columns: 1fr;
-        gap: 7px;
-        align-items: start;
+      .tops-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+          "streak gift"
+          "tg tg";
+        row-gap: 6px;
       }
 
-      .tg-tag {
-        justify-self: start;
+      #topStreak {
+        grid-area: streak;
+      }
+
+      #topGift {
+        grid-area: gift;
+      }
+
+      #tgTag {
+        grid-area: tg;
+        justify-self: center;
+        max-width: 72%;
       }
     }
 
@@ -314,17 +354,17 @@
     <div>
       <h1 class="title">Достижение получено!</h1>
       <div class="tops-row">
-        <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span> —</span>
-        <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span> —</span>
-      </div>
-      <div class="line-row">
-        <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
+        <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span><span class="top-chip-value">—</span></span>
         <span class="tg-tag" id="tgTag" aria-label="Telegram">
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"></path>
           </svg>
-          <span id="tgName">@yapponecc1</span>
+          <span id="tgName" class="tg-name">@yapponecc1</span>
         </span>
+        <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span><span class="top-chip-value">—</span></span>
+      </div>
+      <div class="line-row">
+        <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
       </div>
     </div>
   </section>
@@ -336,6 +376,7 @@
       url: "ws://localhost:21213/",
       reconnectMs: 2500
     };
+    const debugConsole = true;
 
     // real = как есть из события, alias = замена по словарю, translit = авто-транслит кириллицы
     const nicknameDisplayMode = "alias";
@@ -387,7 +428,16 @@
       return nick;
     }
 
-    tgName.textContent = formatNick(tg);
+    function toMinecraftNick(nick) {
+      const prepared = translitRuToLat(formatNick(String(nick || "").trim().replace(/^@+/, "")));
+      const cleaned = prepared
+        .replace(/\s+/g, "_")
+        .replace(/[^A-Za-z0-9_]/g, "")
+        .slice(0, 16);
+      return cleaned || "Player";
+    }
+
+    tgName.textContent = toMinecraftNick(tg);
 
     const urlParams = new URLSearchParams(window.location.search);
     const tops = {
@@ -398,12 +448,12 @@
     };
 
     function renderTops() {
-      const streakNick = tops.streakNick ? formatNick(tops.streakNick) : "—";
-      const giftNick = tops.giftNick ? formatNick(tops.giftNick) : "—";
+      const streakNick = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
+      const giftNick = tops.giftNick ? toMinecraftNick(tops.giftNick) : "—";
       const streakValue = tops.streakCount > 0 ? " x" + tops.streakCount : "";
       const giftValue = tops.giftCoins > 0 ? " " + tops.giftCoins + "c" : "";
-      topStreakEl.innerHTML = "<span class='top-chip-label'>STREAK</span> " + streakNick + streakValue;
-      topGiftEl.innerHTML = "<span class='top-chip-label'>GIFT</span> " + giftNick + giftValue;
+      topStreakEl.innerHTML = "<span class='top-chip-label'>STREAK</span><span class='top-chip-value'>" + streakNick + streakValue + "</span>";
+      topGiftEl.innerHTML = "<span class='top-chip-label'>GIFT</span><span class='top-chip-value'>" + giftNick + giftValue + "</span>";
     }
 
     // Внешний хук: можно дергать из TikFinity/моста реальными никами
@@ -621,11 +671,19 @@
         // В TikTok gifts repeatCount часто соответствует streak-комбо, используем как fallback.
         const streakFromGift = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
+
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] gift", { nick, score, payload });
+        }
       }
 
       if (eventType === "streak") {
         const streak = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streak));
+
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] streak", { nick, streak, payload });
+        }
       }
 
       syncTopFromMaps();
@@ -643,20 +701,35 @@
 
       try {
         liveSocket = new WebSocket(liveSocketConfig.url);
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] connecting", liveSocketConfig.url);
+        }
       } catch {
         scheduleReconnect();
         return;
       }
+
+      liveSocket.onopen = () => {
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] connected");
+        }
+      };
 
       liveSocket.onmessage = (event) => {
         processEventMessage(event.data);
       };
 
       liveSocket.onclose = () => {
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] socket closed, reconnecting...");
+        }
         scheduleReconnect();
       };
 
       liveSocket.onerror = () => {
+        if (debugConsole) {
+          console.log("[ACHIEVEMENT] socket error");
+        }
         try {
           liveSocket.close();
         } catch {
@@ -666,6 +739,27 @@
     }
 
     connectLiveSocket();
+
+    // Проверка в браузерной консоли:
+    // window.achievementDebug.test()
+    // window.achievementDebug.push({...raw event...})
+    // window.achievementDebug.state()
+    window.achievementDebug = {
+      state: () => ({
+        tops: { ...tops },
+        gifts: Object.fromEntries(giftTotalsByUser),
+        streaks: Object.fromEntries(streakBestByUser)
+      }),
+      test: () => {
+        window.updateAchievementTops({
+          streakNick: "Mega_Player_1",
+          streakCount: 7,
+          giftNick: "TopDonator_99",
+          giftCoins: 256
+        });
+      },
+      push: (raw) => processEventMessage(raw)
+    };
 
     function randomDelay() {
       return Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
