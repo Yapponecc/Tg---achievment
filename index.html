@@ -504,6 +504,8 @@
     const giftNameEl = document.getElementById("giftName");
     const topGiftImageEl = document.getElementById("topGiftImage");
     const topGiftFallbackEl = document.getElementById("topGiftFallback");
+    let topGiftImageCandidates = [];
+    let topGiftImageIdx = 0;
 
     let idx = 0;
     let liveSocket = null;
@@ -555,15 +557,21 @@
     tgName.textContent = toMinecraftNick(tg);
 
     function renderGiftIcon(url) {
-      if (url) {
-        topGiftImageEl.src = url;
-        topGiftImageEl.style.display = "block";
-        topGiftFallbackEl.style.display = "none";
-      } else {
+      const normalized = normalizeImageUrl(url);
+      if (!normalized) {
         topGiftImageEl.removeAttribute("src");
         topGiftImageEl.style.display = "none";
         topGiftFallbackEl.style.display = "grid";
+        topGiftImageCandidates = [];
+        topGiftImageIdx = 0;
+        return;
       }
+
+      topGiftImageCandidates = buildImageCandidates(normalized);
+      topGiftImageIdx = 0;
+      topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
+      topGiftImageEl.style.display = "block";
+      topGiftFallbackEl.style.display = "none";
     }
 
     topGiftImageEl.onload = () => {
@@ -572,9 +580,32 @@
     };
 
     topGiftImageEl.onerror = () => {
+      if (topGiftImageIdx + 1 < topGiftImageCandidates.length) {
+        topGiftImageIdx += 1;
+        topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
+        return;
+      }
       topGiftImageEl.style.display = "none";
       topGiftFallbackEl.style.display = "grid";
     };
+
+    function normalizeImageUrl(url) {
+      let value = String(url || "").trim();
+      if (!value) return "";
+      value = value.replace(/\\\//g, "/");
+      if (value.startsWith("//")) value = "https:" + value;
+      if (value.startsWith("http://")) value = "https://" + value.slice("http://".length);
+      if (!/^https?:\/\//i.test(value)) return "";
+      return value;
+    }
+
+    function buildImageCandidates(url) {
+      const direct = normalizeImageUrl(url);
+      if (!direct) return [];
+      const noProto = direct.replace(/^https?:\/\//i, "");
+      const proxy = "https://images.weserv.nl/?url=" + encodeURIComponent(noProto);
+      return [direct, proxy];
+    }
 
     function renderTops() {
       streakNickEl.textContent = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
@@ -756,15 +787,20 @@
     function extractGiftImage(payload) {
       const raw = firstNonEmpty(
         getDeep(payload, "giftPictureUrl"),
+        getDeep(payload, "giftPicture"),
         getDeep(payload, "giftImageUrl"),
         getDeep(payload, "gift.imageUrl"),
+        getDeep(payload, "gift.icon"),
         getDeep(payload, "gift.icon.url"),
         getDeep(payload, "giftData.giftPictureUrl"),
+        getDeep(payload, "giftData.giftPictureUrlNoWebp"),
+        getDeep(payload, "giftData.giftPicture"),
         getDeep(payload, "giftData.imageUrl"),
+        getDeep(payload, "giftData.image.url"),
         getDeep(payload, "imageUrl"),
         getDeep(payload, "icon")
       );
-      return String(raw || "");
+      return normalizeImageUrl(raw);
     }
 
     function extractStreakValue(payload) {
