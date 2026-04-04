@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -105,9 +105,13 @@
     .tops-row {
       margin-top: 8px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
       align-items: center;
-      gap: 7px;
+      gap: 0;
+      border: 1px solid rgba(151, 191, 227, 0.24);
+      border-radius: 9px;
+      background: rgba(8, 16, 28, 0.54);
+      overflow: hidden;
     }
 
     .top-chip {
@@ -126,6 +130,8 @@
       max-width: 100%;
       min-width: 0;
       overflow: hidden;
+      width: 100%;
+      justify-content: flex-start;
     }
 
     .top-chip-label {
@@ -139,12 +145,37 @@
       min-width: 0;
     }
 
-    #topStreak {
-      justify-self: start;
+    #topGift {
+      justify-content: flex-end;
+      text-align: right;
     }
 
-    #topGift {
-      justify-self: end;
+    #topGift .top-chip-value {
+      text-align: right;
+    }
+
+    .top-slot {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      padding: 5px 6px;
+    }
+
+    .top-slot + .top-slot {
+      border-left: 1px solid rgba(151, 191, 227, 0.22);
+    }
+
+    .top-slot.left {
+      justify-content: flex-start;
+    }
+
+    .top-slot.center {
+      justify-content: center;
+      padding-inline: 8px;
+    }
+
+    .top-slot.right {
+      justify-content: flex-end;
     }
 
     .line {
@@ -164,25 +195,120 @@
       display: block;
     }
 
+    .gift-panel {
+      margin-top: 8px;
+      border: 1px solid rgba(169, 201, 232, 0.28);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(20, 31, 46, 0.85), rgba(10, 18, 30, 0.85)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 6px);
+      padding: 6px 8px;
+      box-shadow: inset 0 0 0 1px rgba(19, 31, 48, 0.8);
+    }
+
+    .gift-panel-label {
+      color: #7bc8ff;
+      font-size: clamp(6px, 0.62vw, 9px);
+      line-height: 1.2;
+      opacity: 0.9;
+    }
+
+    .gift-from {
+      margin-top: 3px;
+      color: #f3f8ff;
+      font-size: clamp(8px, 0.9vw, 12px);
+      line-height: 1.22;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
+    }
+
+    .gift-meta {
+      margin-top: 4px;
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr) auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .gift-icon-wrap {
+      position: relative;
+      width: 22px;
+      height: 22px;
+    }
+
+    .gift-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      border: 1px solid rgba(220, 234, 248, 0.52);
+      background: rgba(24, 39, 58, 0.7);
+      image-rendering: crisp-edges;
+      object-fit: contain;
+    }
+
+    .gift-fallback {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      border: 1px solid rgba(220, 234, 248, 0.52);
+      background: rgba(24, 39, 58, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .gift-name,
+    .gift-to {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      color: #dfefff;
+      font-size: clamp(7px, 0.7vw, 10px);
+      line-height: 1.2;
+    }
+
+    .gift-sep {
+      color: #9ecfff;
+      font-size: clamp(7px, 0.6vw, 9px);
+      opacity: 0.92;
+    }
+
+    .gift-coins {
+      color: #f2de63;
+      font-size: clamp(7px, 0.7vw, 10px);
+      line-height: 1.2;
+      text-shadow: 0 1px 0 rgba(74, 66, 20, 0.95);
+      white-space: nowrap;
+    }
+
     .tg-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 7px;
+      padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(175, 222, 255, 0.5);
-      background: rgba(60, 145, 215, 0.16);
-      box-shadow: 0 0 4px rgba(69, 184, 255, 0.2);
-      color: #d7ebff;
+      border: 1px solid rgba(174, 225, 255, 0.7);
+      background: rgba(44, 132, 201, 0.3);
+      box-shadow: 0 0 8px rgba(69, 184, 255, 0.28);
+      color: #ebf7ff;
       font-size: clamp(7px, 0.72vw, 10px);
       line-height: 1.25;
       white-space: nowrap;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
       flex: 0 0 auto;
-      opacity: 0.95;
-      justify-self: center;
+      opacity: 1;
       font-family: "Press Start 2P", monospace;
-      max-width: 45%;
+      max-width: 100%;
       overflow: hidden;
     }
 
@@ -196,6 +322,7 @@
     .tg-name {
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 18ch;
     }
 
     .line.is-hiding {
@@ -266,29 +393,38 @@
       .tg-tag {
         font-size: 7px;
       }
+
+      .gift-panel-label {
+        font-size: 6px;
+      }
+
+      .gift-from {
+        font-size: 7px;
+      }
+
+      .gift-meta {
+        grid-template-columns: 20px minmax(0, 1fr) auto minmax(0, 1fr) auto;
+      }
+
+      .gift-icon-wrap {
+        width: 20px;
+        height: 20px;
+      }
+
+      .gift-name,
+      .gift-to,
+      .gift-coins {
+        font-size: 7px;
+      }
     }
 
     @media (max-width: 520px) {
-      .tops-row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-areas:
-          "streak gift"
-          "tg tg";
-        row-gap: 6px;
+      .top-slot {
+        padding: 4px 5px;
       }
 
-      #topStreak {
-        grid-area: streak;
-      }
-
-      #topGift {
-        grid-area: gift;
-      }
-
-      #tgTag {
-        grid-area: tg;
-        justify-self: center;
-        max-width: 72%;
+      .gift-panel {
+        padding: 5px 6px;
       }
     }
 
@@ -327,9 +463,34 @@
         padding: 4px 5px;
       }
 
+      .top-slot {
+        padding: 3px 4px;
+      }
+
+      .tg-name {
+        max-width: 9ch;
+      }
+
       .top-chip {
         font-size: 6px;
         padding: 3px 5px;
+      }
+
+      .gift-meta {
+        grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr) auto;
+        gap: 4px;
+      }
+
+      .gift-icon-wrap {
+        width: 18px;
+        height: 18px;
+      }
+
+      .gift-panel-label,
+      .gift-name,
+      .gift-to,
+      .gift-coins {
+        font-size: 6px;
       }
     }
   </style>
@@ -354,17 +515,37 @@
     <div>
       <h1 class="title">Достижение получено!</h1>
       <div class="tops-row">
-        <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span><span class="top-chip-value">—</span></span>
-        <span class="tg-tag" id="tgTag" aria-label="Telegram">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"></path>
-          </svg>
-          <span id="tgName" class="tg-name">@yapponecc1</span>
-        </span>
-        <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span><span class="top-chip-value">—</span></span>
+        <div class="top-slot left">
+          <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span><span class="top-chip-value">—</span></span>
+        </div>
+        <div class="top-slot center">
+          <span class="tg-tag" id="tgTag" aria-label="Telegram">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"></path>
+            </svg>
+            <span id="tgName" class="tg-name">@yapponecc1</span>
+          </span>
+        </div>
+        <div class="top-slot right">
+          <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span><span class="top-chip-value">—</span></span>
+        </div>
       </div>
       <div class="line-row">
         <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
+      </div>
+      <div class="gift-panel" aria-label="Last gift block">
+        <div class="gift-panel-label">LAST GIFT</div>
+        <div class="gift-from" id="giftFrom">—</div>
+        <div class="gift-meta">
+          <span class="gift-icon-wrap">
+            <img class="gift-image" id="giftImage" alt="gift image">
+            <span class="gift-fallback" id="giftFallback">🎁</span>
+          </span>
+          <span class="gift-name" id="giftName">Unknown Gift</span>
+          <span class="gift-sep">></span>
+          <span class="gift-to" id="giftTo">yapponecc1</span>
+          <span class="gift-coins" id="giftCoins">0c</span>
+        </div>
       </div>
     </div>
   </section>
@@ -398,11 +579,24 @@
     const tgName = document.getElementById("tgName");
     const topStreakEl = document.getElementById("topStreak");
     const topGiftEl = document.getElementById("topGift");
+    const giftFromEl = document.getElementById("giftFrom");
+    const giftImageEl = document.getElementById("giftImage");
+    const giftFallbackEl = document.getElementById("giftFallback");
+    const giftNameEl = document.getElementById("giftName");
+    const giftToEl = document.getElementById("giftTo");
+    const giftCoinsEl = document.getElementById("giftCoins");
     let idx = 0;
     let liveSocket = null;
     let reconnectTimer = null;
     const giftTotalsByUser = new Map();
     const streakBestByUser = new Map();
+    const lastGiftState = {
+      fromNick: "",
+      toNick: tg,
+      giftName: "Unknown Gift",
+      giftImageUrl: "",
+      coins: 0
+    };
 
     function translitRuToLat(input) {
       const map = {
@@ -438,6 +632,7 @@
     }
 
     tgName.textContent = toMinecraftNick(tg);
+    giftToEl.textContent = toMinecraftNick(tg);
 
     const urlParams = new URLSearchParams(window.location.search);
     const tops = {
@@ -611,6 +806,70 @@
       return unitCoins > 0 ? unitCoins * repeatCount : repeatCount;
     }
 
+    function extractGiftName(payload) {
+      return String(firstNonEmpty(
+        getDeep(payload, "giftName"),
+        getDeep(payload, "gift.name"),
+        getDeep(payload, "giftData.giftName"),
+        getDeep(payload, "giftData.name"),
+        getDeep(payload, "name")
+      ) || "Unknown Gift");
+    }
+
+    function extractGiftImage(payload) {
+      const raw = firstNonEmpty(
+        getDeep(payload, "giftPictureUrl"),
+        getDeep(payload, "giftImageUrl"),
+        getDeep(payload, "gift.imageUrl"),
+        getDeep(payload, "gift.icon.url"),
+        getDeep(payload, "giftData.giftPictureUrl"),
+        getDeep(payload, "giftData.imageUrl"),
+        getDeep(payload, "imageUrl"),
+        getDeep(payload, "icon")
+      );
+      return String(raw || "");
+    }
+
+    function extractGiftTargetNick(payload) {
+      const target = firstNonEmpty(
+        getDeep(payload, "toUser.nickname"),
+        getDeep(payload, "toUser.uniqueId"),
+        getDeep(payload, "targetUser.nickname"),
+        getDeep(payload, "targetUser.uniqueId"),
+        tg
+      );
+      return String(target || tg);
+    }
+
+    function renderLastGift() {
+      giftFromEl.textContent = lastGiftState.fromNick ? toMinecraftNick(lastGiftState.fromNick) : "—";
+      giftNameEl.textContent = lastGiftState.giftName || "Unknown Gift";
+      giftToEl.textContent = toMinecraftNick(lastGiftState.toNick || tg);
+      giftCoinsEl.textContent = Math.max(0, Math.round(lastGiftState.coins || 0)) + "c";
+
+      if (lastGiftState.giftImageUrl) {
+        giftImageEl.src = lastGiftState.giftImageUrl;
+        giftImageEl.style.display = "block";
+        giftFallbackEl.style.display = "none";
+      } else {
+        giftImageEl.removeAttribute("src");
+        giftImageEl.style.display = "none";
+        giftFallbackEl.style.display = "flex";
+      }
+    }
+
+    giftImageEl.onerror = () => {
+      giftImageEl.style.display = "none";
+      giftFallbackEl.style.display = "flex";
+    };
+
+    giftImageEl.onload = () => {
+      giftImageEl.style.display = "block";
+      giftFallbackEl.style.display = "none";
+    };
+
+    renderLastGift();
+
     function extractStreakValue(payload) {
       return Math.max(1, asNumber(firstNonEmpty(
         getDeep(payload, "streakCount"),
@@ -666,14 +925,24 @@
 
       if (eventType === "gift") {
         const score = extractGiftScore(payload);
+        const giftName = extractGiftName(payload);
+        const giftImage = extractGiftImage(payload);
+        const toNick = extractGiftTargetNick(payload);
         giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
 
         // В TikTok gifts repeatCount часто соответствует streak-комбо, используем как fallback.
         const streakFromGift = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
 
+        lastGiftState.fromNick = nick;
+        lastGiftState.toNick = toNick || tg;
+        lastGiftState.giftName = giftName;
+        lastGiftState.giftImageUrl = giftImage;
+        lastGiftState.coins = score;
+        renderLastGift();
+
         if (debugConsole) {
-          console.log("[ACHIEVEMENT] gift", { nick, score, payload });
+          console.log("[ACHIEVEMENT] gift", { nick, score, giftName, giftImage, toNick, payload });
         }
       }
 
@@ -756,6 +1025,17 @@
           streakCount: 7,
           giftNick: "TopDonator_99",
           giftCoins: 256
+        });
+        processEventMessage({
+          eventName: "gift",
+          eventData: {
+            nickname: "TopDonator_99",
+            giftName: "Rose",
+            giftPictureUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/ce1f8f8ef476f0ebf1217f88e4f5f8d8~tplv-obj.image",
+            coins: 20,
+            repeatCount: 1,
+            toUser: { uniqueId: "yapponecc1" }
+          }
         });
       },
       push: (raw) => processEventMessage(raw)
