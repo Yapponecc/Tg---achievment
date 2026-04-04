@@ -78,8 +78,8 @@
     }
 
     .side-box {
-      padding: 7px;
-      min-height: 106px;
+      padding: 0;
+      min-height: 118px;
       background:
         linear-gradient(180deg, rgba(42, 50, 62, 0.96), rgba(12, 16, 24, 0.97)),
         repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 5px),
@@ -100,13 +100,43 @@
       font-size: clamp(7px, 0.52vw, 9px);
       text-shadow: 0 2px 0 rgba(84, 72, 20, 0.9);
       text-align: center;
-      margin-bottom: 7px;
+      margin: 0 0 6px;
       letter-spacing: 0.2px;
-      background: rgba(11, 20, 32, 0.58);
+      background: rgba(11, 20, 32, 0.72);
       border: 1px solid rgba(163, 191, 220, 0.26);
       border-radius: 4px;
       padding: 4px 5px;
       line-height: 1.2;
+    }
+
+    .side-content {
+      position: relative;
+      z-index: 4;
+      padding: 7px;
+    }
+
+    .side-remote-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 304px;
+      height: 120px;
+      border: 0;
+      z-index: 0;
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: center center;
+      pointer-events: none;
+      filter: saturate(1.08) contrast(1.08) brightness(0.9);
+    }
+
+    .side-remote-mask {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(180deg, rgba(5, 12, 20, 0.4) 0%, rgba(5, 12, 20, 0.1) 36%, rgba(5, 12, 20, 0.55) 100%),
+        linear-gradient(90deg, rgba(5, 12, 20, 0.38), rgba(5, 12, 20, 0.04) 40%, rgba(5, 12, 20, 0.38));
+      pointer-events: none;
     }
 
     .side-box[aria-label="Top streak box"] .side-title {
@@ -121,8 +151,8 @@
 
     .side-main {
       display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
-      gap: 7px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
       align-items: center;
     }
 
@@ -138,7 +168,7 @@
         0 0 8px rgba(85, 167, 234, 0.25);
       position: relative;
       overflow: hidden;
-      display: grid;
+      display: none;
       place-items: center;
     }
 
@@ -198,13 +228,14 @@
 
     .side-nick {
       color: #eef7ff;
-      font-size: clamp(8px, 0.62vw, 11px);
+      font-size: clamp(8px, 0.66vw, 11px);
       line-height: 1.25;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
       letter-spacing: 0.1px;
+      text-align: center;
     }
 
     .side-value {
@@ -220,6 +251,7 @@
       border: 1px solid rgba(187, 209, 231, 0.22);
       border-radius: 4px;
       padding: 3px 4px;
+      text-align: center;
     }
 
     .side-sub {
@@ -238,9 +270,9 @@
     }
 
     .gift-name {
-      margin-top: 6px;
+      margin-top: 4px;
       color: #93d3ff;
-      font-size: clamp(7px, 0.5vw, 9px);
+      font-size: clamp(7px, 0.54vw, 9px);
       line-height: 1.22;
       text-align: center;
       white-space: nowrap;
@@ -379,13 +411,7 @@
       }
 
       .side-main {
-        grid-template-columns: 36px minmax(0, 1fr);
-      }
-
-      .streak-icon-wrap,
-      .gift-icon-wrap {
-        width: 36px;
-        height: 36px;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
 
@@ -404,7 +430,7 @@
       }
 
       .side-box {
-        min-height: 92px;
+        min-height: 106px;
       }
     }
 
@@ -446,19 +472,31 @@
 <body>
   <div class="overlay" aria-label="Minecraft achievement overlay">
     <aside class="side-box" aria-label="Top streak box">
-      <div class="side-title">TOP STREAK</div>
-      <div class="side-main">
-        <div class="streak-icon-wrap" id="topStreakIconWrap" aria-hidden="true">
-          <img class="gift-image" id="topStreakImage" alt="streak gift icon" referrerpolicy="no-referrer" decoding="async">
-          <div class="gift-fallback" id="topStreakFallback">🔥</div>
+      <iframe
+        class="side-remote-frame"
+        id="streakRemoteFrame"
+        data-w="304"
+        data-h="120"
+        src="https://tikfinity.zerody.one/widget/tops?cid=2862987"
+        loading="eager"
+        referrerpolicy="no-referrer">
+      </iframe>
+      <div class="side-remote-mask" aria-hidden="true"></div>
+      <div class="side-content">
+        <div class="side-title">TOP STREAK</div>
+        <div class="side-main">
+          <div class="streak-icon-wrap" id="topStreakIconWrap" aria-hidden="true">
+            <img class="gift-image" id="topStreakImage" alt="streak gift icon" referrerpolicy="no-referrer" decoding="async">
+            <div class="gift-fallback" id="topStreakFallback">🔥</div>
+          </div>
+          <div class="side-lines">
+            <div class="side-nick" id="streakNick">—</div>
+            <div class="side-value" id="streakCoins">0 coins</div>
+            <div class="side-sub" id="streakValue">0 streak</div>
+          </div>
         </div>
-        <div class="side-lines">
-          <div class="side-nick" id="streakNick">—</div>
-          <div class="side-value" id="streakCoins">0 coins</div>
-          <div class="side-sub" id="streakValue">0 streak</div>
-        </div>
+        <div class="gift-name" id="streakGiftName">No gifts yet</div>
       </div>
-      <div class="gift-name" id="streakGiftName">No gifts yet</div>
     </aside>
 
     <section class="toast" aria-label="Minecraft achievement widget">
@@ -494,18 +532,30 @@
     </section>
 
     <aside class="side-box" aria-label="Top gift box">
-      <div class="side-title">TOP GIFT</div>
-      <div class="side-main">
-        <div class="gift-icon-wrap" id="topGiftIconWrap" aria-hidden="true">
-          <img class="gift-image" id="topGiftImage" alt="gift icon" referrerpolicy="no-referrer" decoding="async">
-          <div class="gift-fallback" id="topGiftFallback">🎁</div>
+      <iframe
+        class="side-remote-frame"
+        id="giftRemoteFrame"
+        data-w="304"
+        data-h="120"
+        src="https://tikfinity.zerody.one/widget/topg?cid=2862987"
+        loading="eager"
+        referrerpolicy="no-referrer">
+      </iframe>
+      <div class="side-remote-mask" aria-hidden="true"></div>
+      <div class="side-content">
+        <div class="side-title">TOP GIFT</div>
+        <div class="side-main">
+          <div class="gift-icon-wrap" id="topGiftIconWrap" aria-hidden="true">
+            <img class="gift-image" id="topGiftImage" alt="gift icon" referrerpolicy="no-referrer" decoding="async">
+            <div class="gift-fallback" id="topGiftFallback">🎁</div>
+          </div>
+          <div class="side-lines">
+            <div class="side-nick" id="giftNick">—</div>
+            <div class="side-value" id="giftValue">0 coins</div>
+          </div>
         </div>
-        <div class="side-lines">
-          <div class="side-nick" id="giftNick">—</div>
-          <div class="side-value" id="giftValue">0 coins</div>
-        </div>
+        <div class="gift-name" id="giftName">No gifts yet</div>
       </div>
-      <div class="gift-name" id="giftName">No gifts yet</div>
     </aside>
   </div>
 
@@ -550,6 +600,8 @@
     const topStreakImageEl = document.getElementById("topStreakImage");
     const topStreakFallbackEl = document.getElementById("topStreakFallback");
     const topStreakIconWrapEl = document.getElementById("topStreakIconWrap");
+    const streakRemoteFrameEl = document.getElementById("streakRemoteFrame");
+    const giftRemoteFrameEl = document.getElementById("giftRemoteFrame");
     let topGiftImageCandidates = [];
     let topGiftImageIdx = 0;
     let topStreakImageCandidates = [];
@@ -558,6 +610,30 @@
     let topStreakRenderToken = 0;
     let topGiftLastKey = "";
     let topStreakLastKey = "";
+
+    function fitRemoteFrame(frameEl) {
+      if (!frameEl) return;
+      const srcW = Math.max(1, Number(frameEl.dataset.w) || 304);
+      const srcH = Math.max(1, Number(frameEl.dataset.h) || 120);
+      const host = frameEl.parentElement;
+      if (!host) return;
+
+      const hostW = Math.max(1, host.clientWidth);
+      const hostH = Math.max(1, host.clientHeight);
+      const scale = Math.min(hostW / srcW, hostH / srcH);
+      frameEl.style.width = srcW + "px";
+      frameEl.style.height = srcH + "px";
+      frameEl.style.transform = "translate(-50%, -50%) scale(" + scale.toFixed(4) + ")";
+    }
+
+    function fitRemoteFrames() {
+      fitRemoteFrame(streakRemoteFrameEl);
+      fitRemoteFrame(giftRemoteFrameEl);
+    }
+
+    window.addEventListener("resize", fitRemoteFrames);
+    requestAnimationFrame(fitRemoteFrames);
+    setTimeout(fitRemoteFrames, 250);
 
     let idx = 0;
     let liveSocket = null;
