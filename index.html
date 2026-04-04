@@ -538,6 +538,7 @@
     const giftTotalsByUser = new Map();
     const streakBestByUser = new Map();
     const giftMetaByUser = new Map();
+    const streakMetaByUser = new Map();
 
     const tops = {
       streakNick: "",
@@ -602,6 +603,8 @@
       const key = String(giftName || "").toLowerCase().trim();
       const normalized = normalizeImageUrl(imageUrl);
       if (!key || !normalized) return;
+      // Для Rose/Роза держим проверенную иконку, не затираем ее случайным generic URL.
+      if (key.includes("rose") || key.includes("роза")) return;
       knownGiftImages.set(key, normalized);
     }
 
@@ -1046,7 +1049,6 @@
       tops.giftCoins = Math.round(topGift.value);
       tops.streakNick = topStreak.nick;
       tops.streakCount = Math.round(topStreak.value);
-      tops.streakCoins = Math.round(giftTotalsByUser.get(topStreak.nick) || 0);
 
       if (topGift.nick && giftMetaByUser.has(topGift.nick)) {
         const meta = giftMetaByUser.get(topGift.nick);
@@ -1057,11 +1059,18 @@
         tops.giftImageUrl = "";
       }
 
-      if (topStreak.nick && giftMetaByUser.has(topStreak.nick)) {
-        const streakMeta = giftMetaByUser.get(topStreak.nick);
+      if (topStreak.nick && streakMetaByUser.has(topStreak.nick)) {
+        const streakMeta = streakMetaByUser.get(topStreak.nick);
+        tops.streakCoins = Math.round(streakMeta.coins || 0);
         tops.streakGiftName = streakMeta.name || "Gift";
         tops.streakImageUrl = streakMeta.imageUrl || "";
+      } else if (topStreak.nick && giftMetaByUser.has(topStreak.nick)) {
+        const fallbackMeta = giftMetaByUser.get(topStreak.nick);
+        tops.streakCoins = 0;
+        tops.streakGiftName = fallbackMeta.name || "Gift";
+        tops.streakImageUrl = fallbackMeta.imageUrl || "";
       } else {
+        tops.streakCoins = 0;
         tops.streakGiftName = "No gifts yet";
         tops.streakImageUrl = "";
       }
@@ -1093,6 +1102,7 @@
         const score = extractGiftScore(payload);
         const giftName = extractGiftName(payload);
         const giftImage = extractGiftImage(payload);
+        const streakFromGift = extractStreakValue(payload);
 
         giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
         giftMetaByUser.set(nick, {
@@ -1101,20 +1111,52 @@
         });
         rememberGiftImageByName(giftName, giftImage);
 
-        const streakFromGift = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
+        const existingStreakMeta = streakMetaByUser.get(nick) || { streak: 0, coins: 0, name: "", imageUrl: "" };
+        if (
+          streakFromGift > existingStreakMeta.streak ||
+          (streakFromGift === existingStreakMeta.streak && score > existingStreakMeta.coins)
+        ) {
+          streakMetaByUser.set(nick, {
+            streak: streakFromGift,
+            coins: score,
+            name: giftName,
+            imageUrl: giftImage
+          });
+        }
 
         if (debugConsole) {
-          console.log("[ACHIEVEMENT] gift", { nick, score, giftName, giftImage, payload });
+          console.log("[ACHIEVEMENT] gift", { nick, score, streakFromGift, giftName, giftImage, payload });
         }
       }
 
       if (eventType === "streak") {
         const streak = extractStreakValue(payload);
+        const maybeGiftName = extractGiftName(payload);
+        const maybeGiftImage = extractGiftImage(payload);
+        const maybeCoins = extractGiftScore(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streak));
+        const existingStreakMeta = streakMetaByUser.get(nick) || { streak: 0, coins: 0, name: "", imageUrl: "" };
+        if (streak > existingStreakMeta.streak) {
+          streakMetaByUser.set(nick, {
+            streak,
+            coins: maybeCoins || existingStreakMeta.coins || 0,
+            name: maybeGiftName || existingStreakMeta.name || "",
+            imageUrl: maybeGiftImage || existingStreakMeta.imageUrl || ""
+          });
+        } else if (!existingStreakMeta.imageUrl && maybeGiftImage) {
+          streakMetaByUser.set(nick, {
+            ...existingStreakMeta,
+            name: maybeGiftName || existingStreakMeta.name,
+            imageUrl: maybeGiftImage
+          });
+        }
+        if (maybeGiftName && maybeGiftImage) {
+          rememberGiftImageByName(maybeGiftName, maybeGiftImage);
+        }
 
         if (debugConsole) {
-          console.log("[ACHIEVEMENT] streak", { nick, streak, payload });
+          console.log("[ACHIEVEMENT] streak", { nick, streak, maybeGiftName, maybeGiftImage, payload });
         }
       }
 
@@ -1180,7 +1222,9 @@
       state: () => ({
         tops: { ...tops },
         gifts: Object.fromEntries(giftTotalsByUser),
-        streaks: Object.fromEntries(streakBestByUser)
+        streaks: Object.fromEntries(streakBestByUser),
+        streakMeta: Object.fromEntries(streakMetaByUser),
+        knownGiftImages: Object.fromEntries(knownGiftImages)
       }),
       test: () => {
         window.updateAchievementTops({
