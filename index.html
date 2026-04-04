@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft Achievement Stream Widget</title>
+  <title>Minecraft Achievement + Side Tops</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -16,6 +16,9 @@
       --title: #f2de63;
       --text: #f4f7ff;
       --glow: rgba(119, 197, 255, 0.22);
+      --blue: #7bc8ff;
+      --pixel-line: rgba(188, 213, 235, 0.26);
+      --pixel-fill: rgba(11, 20, 32, 0.72);
     }
 
     * {
@@ -32,43 +35,196 @@
     }
 
     body {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 12px;
       font-family: "Press Start 2P", monospace;
       pointer-events: none;
+      padding: 10px;
+      display: grid;
+      place-items: start center;
     }
 
-    .toast {
-      position: relative;
-      width: min(920px, 100%);
+    .overlay {
+      width: min(1180px, 100%);
       display: grid;
-      grid-template-columns: 82px 1fr;
-      gap: 14px;
-      align-items: center;
-      padding: 12px 16px 12px 12px;
+      grid-template-columns: 220px minmax(420px, 1fr) 220px;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .side-box,
+    .toast {
       border: 2px solid var(--frame);
-      border-radius: 12px;
+      border-radius: 8px;
       background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
       box-shadow:
         inset 0 0 0 2px var(--frame-dark),
-        0 10px 32px rgba(0, 0, 0, 0.42),
-        0 0 22px var(--glow);
+        0 10px 30px rgba(0, 0, 0, 0.42),
+        0 0 18px var(--glow);
       outline: 1px solid rgba(203, 224, 245, 0.2);
       outline-offset: -4px;
-      animation: intro 1120ms cubic-bezier(.18, .82, .2, 1) both;
+      position: relative;
+      overflow: hidden;
     }
 
+    .side-box::after,
     .toast::after {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: 10px;
-      background: linear-gradient(100deg, transparent 8%, rgba(255, 255, 255, 0.27) 45%, transparent 72%);
+      background: linear-gradient(100deg, transparent 12%, rgba(255, 255, 255, 0.22) 45%, transparent 72%);
       transform: translateX(-135%);
-      animation: shine 9.6s ease-in-out infinite;
+      animation: shine 10s ease-in-out infinite;
       pointer-events: none;
+    }
+
+    .side-box {
+      padding: 7px;
+      min-height: 106px;
+      background:
+        linear-gradient(180deg, rgba(42, 50, 62, 0.96), rgba(12, 16, 24, 0.97)),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0 1px, transparent 1px 5px);
+    }
+
+    .side-box::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border: 1px solid var(--pixel-line);
+      border-radius: 5px;
+      pointer-events: none;
+    }
+
+    .side-title {
+      color: #f2de63;
+      font-size: clamp(7px, 0.52vw, 9px);
+      text-shadow: 0 2px 0 rgba(84, 72, 20, 0.9);
+      text-align: center;
+      margin-bottom: 7px;
+      letter-spacing: 0.2px;
+      background: rgba(11, 20, 32, 0.58);
+      border: 1px solid rgba(163, 191, 220, 0.26);
+      border-radius: 4px;
+      padding: 4px 5px;
+      line-height: 1.2;
+    }
+
+    .side-box[aria-label="Top streak box"] .side-title {
+      color: #ffd98a;
+      text-shadow: 0 2px 0 rgba(97, 56, 14, 0.9);
+    }
+
+    .side-box[aria-label="Top gift box"] .side-title {
+      color: #9ad9ff;
+      text-shadow: 0 2px 0 rgba(28, 70, 108, 0.9);
+    }
+
+    .side-main {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+    }
+
+    .streak-icon,
+    .gift-icon-wrap {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(203, 226, 246, 0.58);
+      border-radius: 4px;
+      background: rgba(20, 34, 52, 0.78);
+      box-shadow:
+        inset 0 0 0 1px rgba(10, 18, 30, 0.9),
+        0 0 8px rgba(85, 167, 234, 0.25);
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .streak-icon {
+      font-size: 20px;
+      line-height: 1;
+      background: linear-gradient(180deg, rgba(84, 34, 20, 0.82), rgba(35, 16, 12, 0.82));
+    }
+
+    .gift-icon-wrap {
+      background: linear-gradient(180deg, rgba(26, 50, 80, 0.82), rgba(14, 25, 41, 0.82));
+    }
+
+    .gift-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: crisp-edges;
+      display: none;
+      background: rgba(23, 40, 60, 0.72);
+    }
+
+    .gift-fallback {
+      font-size: 20px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .side-lines {
+      min-width: 0;
+    }
+
+    .side-nick {
+      color: #eef7ff;
+      font-size: clamp(8px, 0.62vw, 11px);
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
+      letter-spacing: 0.1px;
+    }
+
+    .side-value {
+      margin-top: 4px;
+      color: #f2de63;
+      font-size: clamp(8px, 0.62vw, 11px);
+      line-height: 1.2;
+      text-shadow: 0 1px 0 rgba(74, 66, 20, 0.95);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: var(--pixel-fill);
+      border: 1px solid rgba(187, 209, 231, 0.22);
+      border-radius: 4px;
+      padding: 3px 4px;
+    }
+
+    .gift-name {
+      margin-top: 6px;
+      color: #93d3ff;
+      font-size: clamp(7px, 0.5vw, 9px);
+      line-height: 1.22;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.95;
+      background: rgba(9, 19, 31, 0.56);
+      border: 1px solid rgba(154, 189, 222, 0.2);
+      border-radius: 4px;
+      padding: 3px 4px;
+    }
+
+    .toast {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      padding: 12px;
+      animation: intro 1120ms cubic-bezier(.18, .82, .2, 1) both;
     }
 
     .icon-shell {
@@ -77,9 +233,7 @@
       border: 2px solid #c8c1ac;
       border-radius: 8px;
       background: linear-gradient(180deg, #b46812, #99540c);
-      box-shadow:
-        inset 0 0 0 2px rgba(38, 22, 9, 0.62),
-        0 5px 14px rgba(0, 0, 0, 0.45);
+      box-shadow: inset 0 0 0 2px rgba(38, 22, 9, 0.62), 0 5px 14px rgba(0, 0, 0, 0.45);
       display: grid;
       place-items: center;
       overflow: hidden;
@@ -93,6 +247,13 @@
       image-rendering: crisp-edges;
     }
 
+    .title-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+    }
+
     .title {
       margin: 0;
       color: var(--title);
@@ -100,216 +261,27 @@
       line-height: 1.24;
       text-shadow: 0 2px 0 rgba(74, 66, 20, 0.95);
       letter-spacing: 0.25px;
-    }
-
-    .tops-row {
-      margin-top: 8px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
-      align-items: center;
-      gap: 0;
-      border: 1px solid rgba(151, 191, 227, 0.24);
-      border-radius: 9px;
-      background: rgba(8, 16, 28, 0.54);
-      overflow: hidden;
-    }
-
-    .top-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(185, 214, 242, 0.34);
-      background: rgba(16, 28, 44, 0.64);
-      color: #dcecff;
-      font-size: clamp(7px, 0.74vw, 10px);
-      line-height: 1.2;
-      white-space: nowrap;
-      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
-      max-width: 100%;
-      min-width: 0;
-      overflow: hidden;
-      width: 100%;
-      justify-content: flex-start;
-    }
-
-    .top-chip-label {
-      color: #7bc8ff;
-      flex: 0 0 auto;
-    }
-
-    .top-chip-value {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
-    }
-
-    #topGift {
-      justify-content: flex-end;
-      text-align: right;
-    }
-
-    #topGift .top-chip-value {
-      text-align: right;
-    }
-
-    .top-slot {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      padding: 5px 6px;
-    }
-
-    .top-slot + .top-slot {
-      border-left: 1px solid rgba(151, 191, 227, 0.22);
-    }
-
-    .top-slot.left {
-      justify-content: flex-start;
-    }
-
-    .top-slot.center {
-      justify-content: center;
-      padding-inline: 8px;
-    }
-
-    .top-slot.right {
-      justify-content: flex-end;
-    }
-
-    .line {
-      margin-top: 0;
-      color: var(--text);
-      font-size: clamp(10px, 1.18vw, 16px);
-      line-height: 1.5;
-      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
-      transition: opacity 520ms ease, transform 520ms ease, filter 520ms ease;
-      will-change: opacity, transform, filter;
-      font-family: "Press Start 2P", monospace;
-      letter-spacing: 0.15px;
-    }
-
-    .line-row {
-      margin-top: 10px;
-      display: block;
-    }
-
-    .gift-panel {
-      margin-top: 8px;
-      border: 1px solid rgba(169, 201, 232, 0.28);
-      border-radius: 8px;
-      background:
-        linear-gradient(180deg, rgba(20, 31, 46, 0.85), rgba(10, 18, 30, 0.85)),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 6px);
-      padding: 6px 8px;
-      box-shadow: inset 0 0 0 1px rgba(19, 31, 48, 0.8);
-    }
-
-    .gift-panel-label {
-      color: #7bc8ff;
-      font-size: clamp(6px, 0.62vw, 9px);
-      line-height: 1.2;
-      opacity: 0.9;
-    }
-
-    .gift-from {
-      margin-top: 3px;
-      color: #f3f8ff;
-      font-size: clamp(8px, 0.9vw, 12px);
-      line-height: 1.22;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
-    }
-
-    .gift-meta {
-      margin-top: 4px;
-      display: grid;
-      grid-template-columns: 22px minmax(0, 1fr) auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 5px;
-      min-width: 0;
-    }
-
-    .gift-icon-wrap {
-      position: relative;
-      width: 22px;
-      height: 22px;
-    }
-
-    .gift-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 4px;
-      border: 1px solid rgba(220, 234, 248, 0.52);
-      background: rgba(24, 39, 58, 0.7);
-      image-rendering: crisp-edges;
-      object-fit: contain;
-    }
-
-    .gift-fallback {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 4px;
-      border: 1px solid rgba(220, 234, 248, 0.52);
-      background: rgba(24, 39, 58, 0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      line-height: 1;
-    }
-
-    .gift-name,
-    .gift-to {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 0;
-      color: #dfefff;
-      font-size: clamp(7px, 0.7vw, 10px);
-      line-height: 1.2;
-    }
-
-    .gift-sep {
-      color: #9ecfff;
-      font-size: clamp(7px, 0.6vw, 9px);
-      opacity: 0.92;
-    }
-
-    .gift-coins {
-      color: #f2de63;
-      font-size: clamp(7px, 0.7vw, 10px);
-      line-height: 1.2;
-      text-shadow: 0 1px 0 rgba(74, 66, 20, 0.95);
-      white-space: nowrap;
     }
 
     .tg-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
+      gap: 5px;
+      padding: 4px 7px;
       border-radius: 999px;
       border: 1px solid rgba(174, 225, 255, 0.7);
       background: rgba(44, 132, 201, 0.3);
       box-shadow: 0 0 8px rgba(69, 184, 255, 0.28);
       color: #ebf7ff;
-      font-size: clamp(7px, 0.72vw, 10px);
+      font-size: clamp(7px, 0.7vw, 10px);
       line-height: 1.25;
       white-space: nowrap;
-      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
-      flex: 0 0 auto;
-      opacity: 1;
-      font-family: "Press Start 2P", monospace;
-      max-width: 100%;
+      max-width: 220px;
       overflow: hidden;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
     }
 
     .tg-tag svg {
@@ -322,7 +294,19 @@
     .tg-name {
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 18ch;
+    }
+
+    .line {
+      margin: 9px 0 0;
+      color: var(--text);
+      font-size: clamp(9px, 1vw, 14px);
+      line-height: 1.45;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
+      transition: opacity 520ms ease, transform 520ms ease, filter 520ms ease;
+      letter-spacing: 0.12px;
+      min-height: 2.6em;
+      display: grid;
+      align-content: center;
     }
 
     .line.is-hiding {
@@ -331,194 +315,131 @@
       filter: blur(2px);
     }
 
+    .divider {
+      margin-top: 8px;
+      height: 1px;
+      border: 0;
+      background: linear-gradient(90deg, transparent, rgba(153, 194, 232, 0.65), transparent);
+      opacity: 0.85;
+    }
+
     @keyframes intro {
-      from {
-        opacity: 0;
-        transform: translateY(-18px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+      from { opacity: 0; transform: translateY(-18px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     @keyframes shine {
-      0%, 14% {
-        transform: translateX(-135%);
-      }
-      35%, 100% {
-        transform: translateX(140%);
-      }
+      0%, 14% { transform: translateX(-135%); }
+      35%, 100% { transform: translateX(140%); }
     }
 
     @keyframes bob {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-2px);
-      }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
     }
 
-    @media (max-width: 600px) {
-      .toast {
-        grid-template-columns: 68px 1fr;
-        gap: 11px;
-        padding: 10px 12px 10px 10px;
+    @media (max-width: 1100px) {
+      .overlay {
+        grid-template-columns: 190px minmax(360px, 1fr) 190px;
       }
 
-      .icon-shell {
-        width: 68px;
-        height: 68px;
+      .side-main {
+        grid-template-columns: 36px minmax(0, 1fr);
       }
 
-      .icon {
-        width: 52px;
-        height: 52px;
-      }
-
-      .line {
-        font-size: clamp(9px, 2.4vw, 12px);
-        line-height: 1.45;
-      }
-
-      .line-row {
-        margin-top: 8px;
-      }
-
-      .top-chip {
-        font-size: 7px;
-      }
-
-      .tg-tag {
-        font-size: 7px;
-      }
-
-      .gift-panel-label {
-        font-size: 6px;
-      }
-
-      .gift-from {
-        font-size: 7px;
-      }
-
-      .gift-meta {
-        grid-template-columns: 20px minmax(0, 1fr) auto minmax(0, 1fr) auto;
-      }
-
+      .streak-icon,
       .gift-icon-wrap {
-        width: 20px;
-        height: 20px;
-      }
-
-      .gift-name,
-      .gift-to,
-      .gift-coins {
-        font-size: 7px;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .top-slot {
-        padding: 4px 5px;
-      }
-
-      .gift-panel {
-        padding: 5px 6px;
-      }
-    }
-
-    @media (max-width: 420px) {
-      body {
-        padding: 6px;
-      }
-
-      .toast {
-        grid-template-columns: 50px 1fr;
-        gap: 8px;
-        padding: 8px 9px 8px 8px;
-      }
-
-      .icon-shell {
-        width: 50px;
-        height: 50px;
-      }
-
-      .icon {
         width: 36px;
         height: 36px;
       }
+    }
+
+    @media (max-width: 860px) {
+      .overlay {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .side-box {
+        order: 2;
+      }
+
+      .toast {
+        order: 1;
+      }
+
+      .side-box {
+        min-height: 92px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 6px; }
+
+      .toast {
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 8px;
+        padding: 8px;
+      }
+
+      .icon-shell {
+        width: 54px;
+        height: 54px;
+      }
+
+      .icon {
+        width: 40px;
+        height: 40px;
+      }
 
       .title {
-        font-size: clamp(10px, 4.1vw, 12px);
+        font-size: clamp(10px, 3.9vw, 12px);
       }
 
       .line {
-        font-size: clamp(8px, 3.2vw, 10px);
-        line-height: 1.45;
+        font-size: clamp(8px, 3vw, 10px);
+        min-height: 2.4em;
       }
 
       .tg-tag {
-        font-size: 8px;
-        padding: 4px 5px;
-      }
-
-      .top-slot {
-        padding: 3px 4px;
-      }
-
-      .tg-name {
-        max-width: 9ch;
-      }
-
-      .top-chip {
-        font-size: 6px;
-        padding: 3px 5px;
-      }
-
-      .gift-meta {
-        grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr) auto;
-        gap: 4px;
-      }
-
-      .gift-icon-wrap {
-        width: 18px;
-        height: 18px;
-      }
-
-      .gift-panel-label,
-      .gift-name,
-      .gift-to,
-      .gift-coins {
-        font-size: 6px;
+        max-width: 160px;
+        font-size: 7px;
       }
     }
   </style>
 </head>
 <body>
-  <section class="toast" aria-label="Minecraft achievement widget">
-    <div class="icon-shell" aria-hidden="true">
-      <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
-        <rect width="16" height="16" fill="#8f4a0c"/>
-        <rect x="1" y="1" width="14" height="14" fill="#c97a1f"/>
-        <rect x="2" y="3" width="12" height="4" fill="#f6f5ef"/>
-        <rect x="2" y="7" width="12" height="6" fill="#e4a74f"/>
-        <rect x="3" y="8" width="10" height="4" fill="#c57b2e"/>
-        <rect x="4" y="4" width="1" height="1" fill="#db4b5d"/>
-        <rect x="7" y="4" width="1" height="1" fill="#db4b5d"/>
-        <rect x="10" y="4" width="1" height="1" fill="#db4b5d"/>
-        <rect x="13" y="2" width="1" height="12" fill="#f2c684"/>
-        <rect x="2" y="13" width="11" height="1" fill="#8f5318"/>
-      </svg>
-    </div>
-
-    <div>
-      <h1 class="title">Достижение получено!</h1>
-      <div class="tops-row">
-        <div class="top-slot left">
-          <span class="top-chip" id="topStreak"><span class="top-chip-label">STREAK</span><span class="top-chip-value">—</span></span>
+  <div class="overlay" aria-label="Minecraft achievement overlay">
+    <aside class="side-box" aria-label="Top streak box">
+      <div class="side-title">TOP STREAK</div>
+      <div class="side-main">
+        <div class="streak-icon" aria-hidden="true">🔥</div>
+        <div class="side-lines">
+          <div class="side-nick" id="streakNick">—</div>
+          <div class="side-value" id="streakValue">0 streak</div>
         </div>
-        <div class="top-slot center">
+      </div>
+    </aside>
+
+    <section class="toast" aria-label="Minecraft achievement widget">
+      <div class="icon-shell" aria-hidden="true">
+        <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+          <rect width="16" height="16" fill="#8f4a0c"/>
+          <rect x="1" y="1" width="14" height="14" fill="#c97a1f"/>
+          <rect x="2" y="3" width="12" height="4" fill="#f6f5ef"/>
+          <rect x="2" y="7" width="12" height="6" fill="#e4a74f"/>
+          <rect x="3" y="8" width="10" height="4" fill="#c57b2e"/>
+          <rect x="4" y="4" width="1" height="1" fill="#db4b5d"/>
+          <rect x="7" y="4" width="1" height="1" fill="#db4b5d"/>
+          <rect x="10" y="4" width="1" height="1" fill="#db4b5d"/>
+          <rect x="13" y="2" width="1" height="12" fill="#f2c684"/>
+          <rect x="2" y="13" width="11" height="1" fill="#8f5318"/>
+        </svg>
+      </div>
+
+      <div>
+        <div class="title-row">
+          <h1 class="title">Достижение получено!</h1>
           <span class="tg-tag" id="tgTag" aria-label="Telegram">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"></path>
@@ -526,44 +447,42 @@
             <span id="tgName" class="tg-name">@yapponecc1</span>
           </span>
         </div>
-        <div class="top-slot right">
-          <span class="top-chip" id="topGift"><span class="top-chip-label">GIFT</span><span class="top-chip-value">—</span></span>
-        </div>
-      </div>
-      <div class="line-row">
+
+        <hr class="divider">
         <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
       </div>
-      <div class="gift-panel" aria-label="Last gift block">
-        <div class="gift-panel-label">LAST GIFT</div>
-        <div class="gift-from" id="giftFrom">—</div>
-        <div class="gift-meta">
-          <span class="gift-icon-wrap">
-            <img class="gift-image" id="giftImage" alt="gift image">
-            <span class="gift-fallback" id="giftFallback">🎁</span>
-          </span>
-          <span class="gift-name" id="giftName">Unknown Gift</span>
-          <span class="gift-sep">></span>
-          <span class="gift-to" id="giftTo">yapponecc1</span>
-          <span class="gift-coins" id="giftCoins">0c</span>
+    </section>
+
+    <aside class="side-box" aria-label="Top gift box">
+      <div class="side-title">TOP GIFT</div>
+      <div class="side-main">
+        <div class="gift-icon-wrap" aria-hidden="true">
+          <img class="gift-image" id="topGiftImage" alt="gift icon">
+          <div class="gift-fallback" id="topGiftFallback">🎁</div>
+        </div>
+        <div class="side-lines">
+          <div class="side-nick" id="giftNick">—</div>
+          <div class="side-value" id="giftValue">0 coins</div>
         </div>
       </div>
-    </div>
-  </section>
+      <div class="gift-name" id="giftName">No gifts yet</div>
+    </aside>
+  </div>
 
   <script>
     const tg = "@yapponecc1";
+    const debugConsole = true;
+
     const liveSocketConfig = {
       enabled: true,
       url: "ws://localhost:21213/",
       reconnectMs: 2500
     };
-    const debugConsole = true;
 
     // real = как есть из события, alias = замена по словарю, translit = авто-транслит кириллицы
     const nicknameDisplayMode = "alias";
     const nicknameAliases = {
       "@yapponecc1": "@yapponecc1"
-      // "оригинальный_ник": "КрасивыйНик"
     };
 
     const lines = [
@@ -577,25 +496,30 @@
 
     const textEl = document.getElementById("rotatingText");
     const tgName = document.getElementById("tgName");
-    const topStreakEl = document.getElementById("topStreak");
-    const topGiftEl = document.getElementById("topGift");
-    const giftFromEl = document.getElementById("giftFrom");
-    const giftImageEl = document.getElementById("giftImage");
-    const giftFallbackEl = document.getElementById("giftFallback");
+
+    const streakNickEl = document.getElementById("streakNick");
+    const streakValueEl = document.getElementById("streakValue");
+    const giftNickEl = document.getElementById("giftNick");
+    const giftValueEl = document.getElementById("giftValue");
     const giftNameEl = document.getElementById("giftName");
-    const giftToEl = document.getElementById("giftTo");
-    const giftCoinsEl = document.getElementById("giftCoins");
+    const topGiftImageEl = document.getElementById("topGiftImage");
+    const topGiftFallbackEl = document.getElementById("topGiftFallback");
+
     let idx = 0;
     let liveSocket = null;
     let reconnectTimer = null;
+
     const giftTotalsByUser = new Map();
     const streakBestByUser = new Map();
-    const lastGiftState = {
-      fromNick: "",
-      toNick: tg,
-      giftName: "Unknown Gift",
-      giftImageUrl: "",
-      coins: 0
+    const giftMetaByUser = new Map();
+
+    const tops = {
+      streakNick: "",
+      streakCount: 0,
+      giftNick: "",
+      giftCoins: 0,
+      giftName: "",
+      giftImageUrl: ""
     };
 
     function translitRuToLat(input) {
@@ -624,39 +548,52 @@
 
     function toMinecraftNick(nick) {
       const prepared = translitRuToLat(formatNick(String(nick || "").trim().replace(/^@+/, "")));
-      const cleaned = prepared
-        .replace(/\s+/g, "_")
-        .replace(/[^A-Za-z0-9_]/g, "")
-        .slice(0, 16);
+      const cleaned = prepared.replace(/\s+/g, "_").replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
       return cleaned || "Player";
     }
 
     tgName.textContent = toMinecraftNick(tg);
-    giftToEl.textContent = toMinecraftNick(tg);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const tops = {
-      streakNick: urlParams.get("streakNick") || "",
-      streakCount: Number(urlParams.get("streakCount") || 0),
-      giftNick: urlParams.get("giftNick") || "",
-      giftCoins: Number(urlParams.get("giftCoins") || 0)
+    function renderGiftIcon(url) {
+      if (url) {
+        topGiftImageEl.src = url;
+        topGiftImageEl.style.display = "block";
+        topGiftFallbackEl.style.display = "none";
+      } else {
+        topGiftImageEl.removeAttribute("src");
+        topGiftImageEl.style.display = "none";
+        topGiftFallbackEl.style.display = "grid";
+      }
+    }
+
+    topGiftImageEl.onload = () => {
+      topGiftImageEl.style.display = "block";
+      topGiftFallbackEl.style.display = "none";
+    };
+
+    topGiftImageEl.onerror = () => {
+      topGiftImageEl.style.display = "none";
+      topGiftFallbackEl.style.display = "grid";
     };
 
     function renderTops() {
-      const streakNick = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
-      const giftNick = tops.giftNick ? toMinecraftNick(tops.giftNick) : "—";
-      const streakValue = tops.streakCount > 0 ? " x" + tops.streakCount : "";
-      const giftValue = tops.giftCoins > 0 ? " " + tops.giftCoins + "c" : "";
-      topStreakEl.innerHTML = "<span class='top-chip-label'>STREAK</span><span class='top-chip-value'>" + streakNick + streakValue + "</span>";
-      topGiftEl.innerHTML = "<span class='top-chip-label'>GIFT</span><span class='top-chip-value'>" + giftNick + giftValue + "</span>";
+      streakNickEl.textContent = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
+      streakValueEl.textContent = tops.streakCount > 0 ? (tops.streakCount + " streak") : "0 streak";
+
+      giftNickEl.textContent = tops.giftNick ? toMinecraftNick(tops.giftNick) : "—";
+      giftValueEl.textContent = tops.giftCoins > 0 ? (tops.giftCoins + " coins") : "0 coins";
+      giftNameEl.textContent = tops.giftName || "No gifts yet";
+
+      renderGiftIcon(tops.giftImageUrl);
     }
 
-    // Внешний хук: можно дергать из TikFinity/моста реальными никами
     window.updateAchievementTops = (payload = {}) => {
       if (typeof payload.streakNick === "string") tops.streakNick = payload.streakNick;
       if (typeof payload.streakCount === "number") tops.streakCount = payload.streakCount;
       if (typeof payload.giftNick === "string") tops.giftNick = payload.giftNick;
       if (typeof payload.giftCoins === "number") tops.giftCoins = payload.giftCoins;
+      if (typeof payload.giftName === "string") tops.giftName = payload.giftName;
+      if (typeof payload.giftImageUrl === "string") tops.giftImageUrl = payload.giftImageUrl;
       renderTops();
     };
 
@@ -813,7 +750,7 @@
         getDeep(payload, "giftData.giftName"),
         getDeep(payload, "giftData.name"),
         getDeep(payload, "name")
-      ) || "Unknown Gift");
+      ) || "Gift");
     }
 
     function extractGiftImage(payload) {
@@ -829,46 +766,6 @@
       );
       return String(raw || "");
     }
-
-    function extractGiftTargetNick(payload) {
-      const target = firstNonEmpty(
-        getDeep(payload, "toUser.nickname"),
-        getDeep(payload, "toUser.uniqueId"),
-        getDeep(payload, "targetUser.nickname"),
-        getDeep(payload, "targetUser.uniqueId"),
-        tg
-      );
-      return String(target || tg);
-    }
-
-    function renderLastGift() {
-      giftFromEl.textContent = lastGiftState.fromNick ? toMinecraftNick(lastGiftState.fromNick) : "—";
-      giftNameEl.textContent = lastGiftState.giftName || "Unknown Gift";
-      giftToEl.textContent = toMinecraftNick(lastGiftState.toNick || tg);
-      giftCoinsEl.textContent = Math.max(0, Math.round(lastGiftState.coins || 0)) + "c";
-
-      if (lastGiftState.giftImageUrl) {
-        giftImageEl.src = lastGiftState.giftImageUrl;
-        giftImageEl.style.display = "block";
-        giftFallbackEl.style.display = "none";
-      } else {
-        giftImageEl.removeAttribute("src");
-        giftImageEl.style.display = "none";
-        giftFallbackEl.style.display = "flex";
-      }
-    }
-
-    giftImageEl.onerror = () => {
-      giftImageEl.style.display = "none";
-      giftFallbackEl.style.display = "flex";
-    };
-
-    giftImageEl.onload = () => {
-      giftImageEl.style.display = "block";
-      giftFallbackEl.style.display = "none";
-    };
-
-    renderLastGift();
 
     function extractStreakValue(payload) {
       return Math.max(1, asNumber(firstNonEmpty(
@@ -896,10 +793,21 @@
     function syncTopFromMaps() {
       const topGift = getTopEntry(giftTotalsByUser);
       const topStreak = getTopEntry(streakBestByUser);
+
       tops.giftNick = topGift.nick;
       tops.giftCoins = Math.round(topGift.value);
       tops.streakNick = topStreak.nick;
       tops.streakCount = Math.round(topStreak.value);
+
+      if (topGift.nick && giftMetaByUser.has(topGift.nick)) {
+        const meta = giftMetaByUser.get(topGift.nick);
+        tops.giftName = meta.name || "Gift";
+        tops.giftImageUrl = meta.imageUrl || "";
+      } else {
+        tops.giftName = "No gifts yet";
+        tops.giftImageUrl = "";
+      }
+
       renderTops();
     }
 
@@ -927,22 +835,18 @@
         const score = extractGiftScore(payload);
         const giftName = extractGiftName(payload);
         const giftImage = extractGiftImage(payload);
-        const toNick = extractGiftTargetNick(payload);
-        giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
 
-        // В TikTok gifts repeatCount часто соответствует streak-комбо, используем как fallback.
+        giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
+        giftMetaByUser.set(nick, {
+          name: giftName,
+          imageUrl: giftImage
+        });
+
         const streakFromGift = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
 
-        lastGiftState.fromNick = nick;
-        lastGiftState.toNick = toNick || tg;
-        lastGiftState.giftName = giftName;
-        lastGiftState.giftImageUrl = giftImage;
-        lastGiftState.coins = score;
-        renderLastGift();
-
         if (debugConsole) {
-          console.log("[ACHIEVEMENT] gift", { nick, score, giftName, giftImage, toNick, payload });
+          console.log("[ACHIEVEMENT] gift", { nick, score, giftName, giftImage, payload });
         }
       }
 
@@ -1009,10 +913,10 @@
 
     connectLiveSocket();
 
-    // Проверка в браузерной консоли:
+    // Проверка в консоли:
     // window.achievementDebug.test()
-    // window.achievementDebug.push({...raw event...})
     // window.achievementDebug.state()
+    // window.achievementDebug.push({...raw event...})
     window.achievementDebug = {
       state: () => ({
         tops: { ...tops },
@@ -1022,20 +926,11 @@
       test: () => {
         window.updateAchievementTops({
           streakNick: "Mega_Player_1",
-          streakCount: 7,
-          giftNick: "TopDonator_99",
-          giftCoins: 256
-        });
-        processEventMessage({
-          eventName: "gift",
-          eventData: {
-            nickname: "TopDonator_99",
-            giftName: "Rose",
-            giftPictureUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/ce1f8f8ef476f0ebf1217f88e4f5f8d8~tplv-obj.image",
-            coins: 20,
-            repeatCount: 1,
-            toUser: { uniqueId: "yapponecc1" }
-          }
+          streakCount: 9,
+          giftNick: "KZX",
+          giftCoins: 120,
+          giftName: "Rose",
+          giftImageUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/ce1f8f8ef476f0ebf1217f88e4f5f8d8~tplv-obj.image"
         });
       },
       push: (raw) => processEventMessage(raw)
