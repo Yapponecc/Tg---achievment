@@ -151,23 +151,45 @@
     }
 
     .gift-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      position: relative;
+      z-index: 2;
+      width: calc(100% - 6px);
+      height: calc(100% - 6px);
       object-fit: contain;
-      image-rendering: crisp-edges;
+      image-rendering: auto;
       display: none;
-      background: rgba(23, 40, 60, 0.72);
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+      pointer-events: none;
     }
 
     .gift-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
       font-size: 20px;
       line-height: 1;
       display: grid;
       place-items: center;
       width: 100%;
       height: 100%;
+    }
+
+    .gift-icon-wrap::before,
+    .streak-icon-wrap::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: 3px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.28)),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 4px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .gift-icon-wrap.has-image .gift-fallback,
+    .streak-icon-wrap.has-image .gift-fallback {
+      display: none;
     }
 
     .side-lines {
@@ -426,8 +448,8 @@
     <aside class="side-box" aria-label="Top streak box">
       <div class="side-title">TOP STREAK</div>
       <div class="side-main">
-        <div class="streak-icon-wrap" aria-hidden="true">
-          <img class="gift-image" id="topStreakImage" alt="streak gift icon">
+        <div class="streak-icon-wrap" id="topStreakIconWrap" aria-hidden="true">
+          <img class="gift-image" id="topStreakImage" alt="streak gift icon" referrerpolicy="no-referrer" decoding="async">
           <div class="gift-fallback" id="topStreakFallback">🔥</div>
         </div>
         <div class="side-lines">
@@ -474,8 +496,8 @@
     <aside class="side-box" aria-label="Top gift box">
       <div class="side-title">TOP GIFT</div>
       <div class="side-main">
-        <div class="gift-icon-wrap" aria-hidden="true">
-          <img class="gift-image" id="topGiftImage" alt="gift icon">
+        <div class="gift-icon-wrap" id="topGiftIconWrap" aria-hidden="true">
+          <img class="gift-image" id="topGiftImage" alt="gift icon" referrerpolicy="no-referrer" decoding="async">
           <div class="gift-fallback" id="topGiftFallback">🎁</div>
         </div>
         <div class="side-lines">
@@ -524,12 +546,18 @@
     const giftNameEl = document.getElementById("giftName");
     const topGiftImageEl = document.getElementById("topGiftImage");
     const topGiftFallbackEl = document.getElementById("topGiftFallback");
+    const topGiftIconWrapEl = document.getElementById("topGiftIconWrap");
     const topStreakImageEl = document.getElementById("topStreakImage");
     const topStreakFallbackEl = document.getElementById("topStreakFallback");
+    const topStreakIconWrapEl = document.getElementById("topStreakIconWrap");
     let topGiftImageCandidates = [];
     let topGiftImageIdx = 0;
     let topStreakImageCandidates = [];
     let topStreakImageIdx = 0;
+    let topGiftRenderToken = 0;
+    let topStreakRenderToken = 0;
+    let topGiftLastKey = "";
+    let topStreakLastKey = "";
 
     let idx = 0;
     let liveSocket = null;
@@ -608,29 +636,56 @@
       knownGiftImages.set(key, normalized);
     }
 
+    function showIcon(imgEl, fallbackEl, wrapEl) {
+      imgEl.style.display = "block";
+      imgEl.style.visibility = "visible";
+      imgEl.style.opacity = "1";
+      fallbackEl.style.display = "none";
+      if (wrapEl) wrapEl.classList.add("has-image");
+    }
+
+    function hideIcon(imgEl, fallbackEl, wrapEl) {
+      imgEl.style.display = "none";
+      imgEl.style.visibility = "hidden";
+      imgEl.style.opacity = "0";
+      fallbackEl.style.display = "grid";
+      if (wrapEl) wrapEl.classList.remove("has-image");
+    }
+
+    function addCacheBust(url, token) {
+      const normalized = normalizeImageUrl(url);
+      if (!normalized) return "";
+      const withoutOldBust = normalized.replace(/([?&])_ab=\d+/g, "").replace(/[?&]$/, "");
+      const glue = withoutOldBust.includes("?") ? "&" : "?";
+      return withoutOldBust + glue + "_ab=" + token;
+    }
+
     function renderGiftIcon(url, giftName = "") {
       const normalized = normalizeImageUrl(url);
       const fallbackByName = getKnownGiftFallbackByName(giftName);
+      const key = String(giftName || "") + "|" + String(normalized || fallbackByName || "");
+      if (key !== topGiftLastKey) {
+        topGiftLastKey = key;
+        topGiftRenderToken += 1;
+      }
 
       if (!normalized && !fallbackByName) {
         topGiftImageEl.removeAttribute("src");
-        topGiftImageEl.style.display = "none";
-        topGiftFallbackEl.style.display = "grid";
+        hideIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
         topGiftImageCandidates = [];
         topGiftImageIdx = 0;
         return;
       }
 
-      topGiftImageCandidates = buildImageCandidates(normalized, giftName);
+      topGiftImageCandidates = buildImageCandidates(normalized, giftName)
+        .map((candidate) => addCacheBust(candidate, topGiftRenderToken));
       topGiftImageIdx = 0;
       topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
-      topGiftImageEl.style.display = "block";
-      topGiftFallbackEl.style.display = "none";
+      showIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
     }
 
     topGiftImageEl.onload = () => {
-      topGiftImageEl.style.display = "block";
-      topGiftFallbackEl.style.display = "none";
+      showIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
     };
 
     topGiftImageEl.onerror = () => {
@@ -639,33 +694,35 @@
         topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
         return;
       }
-      topGiftImageEl.style.display = "none";
-      topGiftFallbackEl.style.display = "grid";
+      hideIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
     };
 
     function renderStreakIcon(url, giftName = "") {
       const normalized = normalizeImageUrl(url);
       const fallbackByName = getKnownGiftFallbackByName(giftName);
+      const key = String(giftName || "") + "|" + String(normalized || fallbackByName || "");
+      if (key !== topStreakLastKey) {
+        topStreakLastKey = key;
+        topStreakRenderToken += 1;
+      }
 
       if (!normalized && !fallbackByName) {
         topStreakImageEl.removeAttribute("src");
-        topStreakImageEl.style.display = "none";
-        topStreakFallbackEl.style.display = "grid";
+        hideIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
         topStreakImageCandidates = [];
         topStreakImageIdx = 0;
         return;
       }
 
-      topStreakImageCandidates = buildImageCandidates(normalized, giftName);
+      topStreakImageCandidates = buildImageCandidates(normalized, giftName)
+        .map((candidate) => addCacheBust(candidate, topStreakRenderToken));
       topStreakImageIdx = 0;
       topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
-      topStreakImageEl.style.display = "block";
-      topStreakFallbackEl.style.display = "none";
+      showIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
     }
 
     topStreakImageEl.onload = () => {
-      topStreakImageEl.style.display = "block";
-      topStreakFallbackEl.style.display = "none";
+      showIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
     };
 
     topStreakImageEl.onerror = () => {
@@ -674,8 +731,7 @@
         topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
         return;
       }
-      topStreakImageEl.style.display = "none";
-      topStreakFallbackEl.style.display = "grid";
+      hideIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
     };
 
     function normalizeImageUrl(url) {
@@ -785,9 +841,15 @@
 
       const withProxy = [];
       for (const candidate of result) {
-        withProxy.push(candidate);
         const noProto = candidate.replace(/^https?:\/\//i, "");
-        withProxy.push("https://images.weserv.nl/?url=" + encodeURIComponent(noProto));
+        const proxyUrl = "https://images.weserv.nl/?url=" + encodeURIComponent(noProto);
+        if (candidate.includes("tiktokcdn.com")) {
+          withProxy.push(proxyUrl);
+          withProxy.push(candidate);
+        } else {
+          withProxy.push(candidate);
+          withProxy.push(proxyUrl);
+        }
       }
 
       const unique = [];
