@@ -3,507 +3,559 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telegram Achievement Widget</title>
+  <title>Achievement TG Widget</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Unbounded:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-1: #050d1f;
-      --bg-2: #0f2a57;
-      --bg-3: #132f6b;
-      --card-1: rgba(8, 21, 46, 0.86);
-      --card-2: rgba(15, 37, 73, 0.72);
-      --line: rgba(147, 197, 253, 0.25);
-      --text: #e4f3ff;
-      --muted: #9eb3d1;
-      --accent: #fb923c;
-      --cyan: #22d3ee;
-      --blue: #60a5fa;
-      --mint: #34d399;
-      --gold: #facc15;
-      --shadow: 0 30px 80px rgba(2, 7, 20, 0.62);
+      --bg0: #06101e;
+      --bg1: #0a1f37;
+      --bg2: #102a4a;
+      --pixel-black: #1b1b1b;
+      --pixel-gray: #3b3b3b;
+      --pixel-light: #b3b3b3;
+      --yellow: #f5e562;
+      --white: #f8fbff;
+      --cyan: #53d7ff;
+      --green: #6ff39e;
+      --orange: #ffab47;
+      --panel: rgba(7, 16, 30, 0.78);
+      --line: rgba(157, 214, 255, 0.3);
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
+      margin: 0;
       width: 100%;
       min-height: 100%;
     }
 
     body {
-      margin: 0;
       min-height: 100svh;
       display: grid;
       place-items: center;
-      padding: clamp(16px, 2vw, 28px);
-      font-family: "Unbounded", "Segoe UI", sans-serif;
-      color: var(--text);
-      overflow: hidden;
+      padding: clamp(14px, 2.2vw, 30px);
+      color: var(--white);
+      font-family: "Exo 2", "Segoe UI", sans-serif;
       background:
-        radial-gradient(70vw 70vw at 20% 10%, rgba(34, 211, 238, 0.22), transparent 60%),
-        radial-gradient(60vw 60vw at 80% 90%, rgba(250, 204, 21, 0.14), transparent 64%),
-        linear-gradient(135deg, var(--bg-1), var(--bg-2) 50%, var(--bg-3));
-    }
-
-    body::before,
-    body::after {
-      content: "";
-      position: fixed;
-      inset: -25vmax;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: 0.5;
+        radial-gradient(1200px 700px at 8% 8%, rgba(83, 215, 255, 0.16), transparent 65%),
+        radial-gradient(1100px 700px at 92% 88%, rgba(255, 171, 71, 0.14), transparent 62%),
+        linear-gradient(155deg, var(--bg0), var(--bg1), var(--bg2));
+      overflow: hidden;
     }
 
     body::before {
-      background: conic-gradient(from 120deg, transparent 0%, rgba(96, 165, 250, 0.22), transparent 35%, rgba(34, 211, 238, 0.3), transparent 70%);
-      animation: skyRotate 22s linear infinite;
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.85) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 72% 28%, rgba(255, 255, 255, 0.45) 0 1.2px, transparent 1.8px),
+        radial-gradient(circle at 36% 78%, rgba(255, 255, 255, 0.6) 0 1.4px, transparent 2px),
+        radial-gradient(circle at 85% 64%, rgba(255, 255, 255, 0.38) 0 1.2px, transparent 1.8px);
+      animation: stars 12s linear infinite;
+      opacity: 0.45;
     }
 
-    body::after {
-      background: radial-gradient(circle at 50% 50%, rgba(148, 163, 184, 0.15), transparent 45%);
-      animation: pulseFog 6s ease-in-out infinite;
-    }
-
-    .stage {
+    .scene {
+      width: min(900px, 100%);
       position: relative;
-      width: min(760px, 100%);
+      z-index: 1;
+      animation: sceneIn 900ms cubic-bezier(.16, .86, .24, 1) both;
     }
 
-    .widget {
+    .toast {
       position: relative;
-      border-radius: 28px;
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 3px solid var(--pixel-gray);
+      box-shadow:
+        inset 0 0 0 2px var(--pixel-black),
+        0 24px 32px rgba(0, 0, 0, 0.34);
+      background: linear-gradient(180deg, rgba(40, 40, 40, 0.96), rgba(23, 23, 23, 0.98));
       overflow: hidden;
-      border: 1px solid var(--line);
-      padding: clamp(18px, 2.6vw, 30px);
-      background: linear-gradient(160deg, var(--card-1), var(--card-2));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
       isolation: isolate;
-      animation: widgetReveal 900ms cubic-bezier(.2, .82, .14, 1) both;
+      animation: toastDrop 1000ms cubic-bezier(.2, .86, .18, 1) both;
     }
 
-    .widget::before {
+    .toast::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 8%, rgba(255, 255, 255, 0.35) 46%, transparent 74%);
+      transform: translateX(-130%);
+      animation: shine 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .pixel-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      border: 3px solid #cfcebd;
+      background:
+        linear-gradient(135deg, #7b3f00 0 30%, #8f4b09 30% 44%, #d68f36 44% 56%, #bf6f17 56% 100%);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      line-height: 1;
+      box-shadow:
+        inset 0 0 0 2px rgba(20, 20, 20, 0.45),
+        0 8px 14px rgba(0, 0, 0, 0.45);
+      animation: floatIcon 2.6s ease-in-out infinite;
+    }
+
+    .toast-title {
+      margin: 0;
+      color: var(--yellow);
+      font-size: clamp(13px, 2.2vw, 22px);
+      line-height: 1.15;
+      letter-spacing: 0.5px;
+      font-family: "Press Start 2P", "Exo 2", sans-serif;
+      text-shadow: 0 2px 0 #3f3f1a;
+    }
+
+    .toast-sub {
+      margin: 8px 0 0;
+      color: #f3f6ff;
+      font-size: clamp(13px, 2vw, 24px);
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+    }
+
+    .panel {
+      margin-top: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(155deg, rgba(7, 17, 33, 0.93), var(--panel)),
+        linear-gradient(180deg, rgba(83, 215, 255, 0.15), transparent);
+      backdrop-filter: blur(7px);
+      box-shadow:
+        0 24px 36px rgba(4, 10, 20, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      padding: clamp(16px, 2.4vw, 26px);
+      position: relative;
+      overflow: hidden;
+      animation: panelIn 1100ms cubic-bezier(.2, .84, .12, 1) both;
+    }
+
+    .panel::before {
       content: "";
       position: absolute;
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(95deg, transparent 8%, rgba(148, 163, 184, 0.2) 46%, transparent 84%);
-      transform: translateX(-140%);
-      animation: scanLine 4.8s ease-in-out infinite;
-      z-index: -1;
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 7px);
+      opacity: 0.25;
     }
 
-    .achievement-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 13px;
-      border-radius: 999px;
-      font-size: 11px;
-      letter-spacing: 1.1px;
-      text-transform: uppercase;
-      font-family: "Orbitron", sans-serif;
-      color: #ffedd5;
-      background: linear-gradient(90deg, rgba(251, 146, 60, 0.33), rgba(250, 204, 21, 0.25));
-      border: 1px solid rgba(253, 186, 116, 0.45);
-      animation: badgePulse 2.6s ease-in-out infinite;
-    }
-
-    .achievement-tag-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 12px rgba(250, 204, 21, 0.9);
-    }
-
-    .layout {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: clamp(14px, 2.4vw, 24px);
-      align-items: center;
-    }
-
-    .crest {
-      width: clamp(70px, 8vw, 88px);
-      aspect-ratio: 1;
-      border-radius: 22px;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.35), transparent 38%),
-        linear-gradient(145deg, rgba(34, 211, 238, 0.62), rgba(96, 165, 250, 0.56));
-      border: 1px solid rgba(186, 230, 253, 0.58);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.38),
-        0 12px 24px rgba(56, 189, 248, 0.28);
-      animation: crestHover 3.2s ease-in-out infinite;
-    }
-
-    .crest svg {
-      width: 54%;
-      fill: #ecfeff;
-      filter: drop-shadow(0 2px 8px rgba(6, 182, 212, 0.46));
-    }
-
-    h1 {
+    .headline {
       margin: 0;
-      font-family: "Orbitron", sans-serif;
-      font-size: clamp(24px, 4vw, 42px);
-      line-height: 1.12;
-      letter-spacing: 0.8px;
+      font-size: clamp(24px, 3.4vw, 40px);
+      line-height: 1.08;
+      letter-spacing: 0.4px;
+      font-weight: 800;
       text-wrap: balance;
     }
 
-    .lead {
-      margin: 10px 0 0;
-      font-size: clamp(12px, 2vw, 15px);
-      color: var(--muted);
-      line-height: 1.58;
-      max-width: 45ch;
+    .headline span {
+      color: var(--cyan);
+      text-shadow: 0 0 16px rgba(83, 215, 255, 0.4);
     }
 
-    .ticker-wrap {
-      margin-top: 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .ticker-label {
-      font-family: "Orbitron", sans-serif;
-      font-size: 10px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #bfdbfe;
-      opacity: 0.86;
+    .description {
+      margin: 12px 0 0;
+      color: #d7e4f8;
+      font-size: clamp(14px, 1.8vw, 18px);
+      line-height: 1.55;
+      max-width: 52ch;
     }
 
     .ticker {
-      font-size: 13px;
-      color: #dbeafe;
-      min-height: 1.25em;
-      animation: tickerFade 500ms ease;
-    }
-
-    .footer {
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .server-hint {
-      margin: 0;
-      font-size: 13px;
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-
-    .server-hint strong {
-      color: var(--mint);
+      margin-top: 13px;
+      min-height: 1.35em;
+      color: #bfeaff;
+      font-size: clamp(13px, 1.8vw, 18px);
       font-weight: 600;
+      opacity: 0.95;
+      animation: fadeUp 420ms ease both;
+    }
+
+    .meta-grid {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .meta-item {
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(164, 214, 255, 0.24);
+      background: rgba(4, 10, 20, 0.5);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: transform 220ms ease, border-color 220ms ease;
+    }
+
+    .meta-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(164, 214, 255, 0.52);
+    }
+
+    .meta-label {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      opacity: 0.75;
+      font-family: "Press Start 2P", "Exo 2", sans-serif;
+    }
+
+    .meta-value {
+      margin: 8px 0 0;
+      font-size: clamp(14px, 2vw, 18px);
+      font-weight: 700;
+      color: #ebf7ff;
+    }
+
+    .meta-value.green {
+      color: var(--green);
+    }
+
+    .meta-value.orange {
+      color: var(--orange);
+    }
+
+    .progress-box {
+      margin-top: 16px;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #cde8ff;
+      font-family: "Press Start 2P", "Exo 2", sans-serif;
+    }
+
+    .progress-track {
+      margin-top: 8px;
+      height: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(142, 197, 255, 0.42);
+      background: rgba(0, 0, 0, 0.35);
+      padding: 2px;
+    }
+
+    .progress-fill {
+      --w: 0%;
+      width: var(--w);
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #45e0ff, #40c4ff, #4ea7ff);
+      box-shadow: 0 0 18px rgba(78, 167, 255, 0.5);
+      position: relative;
+      overflow: hidden;
+      transition: width 900ms cubic-bezier(.2, .76, .16, 1);
+    }
+
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 12%, rgba(255, 255, 255, 0.76) 48%, transparent 76%);
+      transform: translateX(-150%);
+      animation: shineBar 2.1s linear infinite;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
 
     .join-btn {
       appearance: none;
       border: 0;
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 12px 16px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      font-family: "Unbounded", sans-serif;
       text-decoration: none;
-      color: #f8fafc;
-      background: linear-gradient(130deg, #0ea5e9, #2563eb);
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fcff;
+      background: linear-gradient(125deg, #00b6ff, #2080ff);
       box-shadow:
-        0 10px 24px rgba(14, 165, 233, 0.35),
+        0 12px 20px rgba(32, 128, 255, 0.38),
         inset 0 1px 0 rgba(255, 255, 255, 0.36);
-      transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+      transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
     }
 
     .join-btn:hover {
       transform: translateY(-2px);
-      filter: brightness(1.07);
+      filter: brightness(1.05);
       box-shadow:
-        0 16px 28px rgba(37, 99, 235, 0.42),
-        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+        0 16px 26px rgba(32, 128, 255, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.44);
     }
 
-    .join-btn:active {
-      transform: translateY(0);
-    }
-
-    .join-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-    }
-
-    .progress-wrap {
-      margin-top: 18px;
-      border: 1px solid rgba(96, 165, 250, 0.26);
-      border-radius: 999px;
-      padding: 4px;
-      background: rgba(15, 23, 42, 0.42);
-    }
-
-    .progress-bar {
-      --p: 0%;
-      position: relative;
-      width: var(--p);
-      height: 11px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--cyan), var(--blue), #818cf8);
-      box-shadow: 0 0 14px rgba(96, 165, 250, 0.5);
-      transition: width 900ms cubic-bezier(.2, .8, .16, 1);
-      overflow: hidden;
-    }
-
-    .progress-bar::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(105deg, transparent 15%, rgba(255, 255, 255, 0.7) 45%, transparent 72%);
-      transform: translateX(-150%);
-      animation: progressShine 2.6s linear infinite;
-    }
-
-    .progress-meta {
-      margin-top: 8px;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 11px;
-      color: #bfdbfe;
-      letter-spacing: 0.35px;
-      text-transform: uppercase;
-      font-family: "Orbitron", sans-serif;
+    .handle {
+      font-size: 15px;
+      font-weight: 700;
+      color: #d8ecff;
+      border: 1px solid rgba(158, 207, 255, 0.38);
+      border-radius: 12px;
+      padding: 11px 13px;
+      background: rgba(3, 9, 18, 0.48);
     }
 
     .particles {
       position: absolute;
-      inset: 0;
+      inset: -6px;
       pointer-events: none;
       overflow: hidden;
-      z-index: -1;
+      z-index: 2;
     }
 
     .particles span {
       position: absolute;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(226, 232, 240, 0.45);
-      filter: blur(0.2px);
-      animation: floatBits linear infinite;
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      background: rgba(239, 251, 255, 0.7);
+      box-shadow: 0 0 8px rgba(83, 215, 255, 0.8);
+      animation: rise linear infinite;
     }
 
-    .particles span:nth-child(1) { left: 10%; top: 80%; animation-duration: 9s; animation-delay: -1s; }
-    .particles span:nth-child(2) { left: 20%; top: 92%; animation-duration: 13s; animation-delay: -4s; width: 4px; height: 4px; }
-    .particles span:nth-child(3) { left: 36%; top: 84%; animation-duration: 11s; animation-delay: -2.5s; }
-    .particles span:nth-child(4) { left: 56%; top: 90%; animation-duration: 10s; animation-delay: -5s; width: 8px; height: 8px; }
-    .particles span:nth-child(5) { left: 76%; top: 86%; animation-duration: 8.8s; animation-delay: -3.2s; }
-    .particles span:nth-child(6) { left: 88%; top: 95%; animation-duration: 12s; animation-delay: -1.8s; width: 5px; height: 5px; }
+    .particles span:nth-child(1) { left: 8%; bottom: 2%; animation-duration: 5.3s; animation-delay: -1.2s; }
+    .particles span:nth-child(2) { left: 28%; bottom: -1%; animation-duration: 6s; animation-delay: -2.4s; }
+    .particles span:nth-child(3) { left: 47%; bottom: -2%; animation-duration: 5.1s; animation-delay: -0.8s; }
+    .particles span:nth-child(4) { left: 62%; bottom: 1%; animation-duration: 6.2s; animation-delay: -3.4s; }
+    .particles span:nth-child(5) { left: 82%; bottom: -1%; animation-duration: 4.8s; animation-delay: -2.1s; }
 
-    @keyframes widgetReveal {
-      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+    @keyframes stars {
+      from { transform: translateY(0); }
+      to { transform: translateY(14px); }
+    }
+
+    @keyframes sceneIn {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    @keyframes skyRotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    @keyframes toastDrop {
+      0% { opacity: 0; transform: translateY(-34px) scale(0.96); }
+      65% { opacity: 1; transform: translateY(4px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    @keyframes pulseFog {
-      0%, 100% { opacity: 0.36; }
-      50% { opacity: 0.56; }
-    }
-
-    @keyframes crestHover {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-    @keyframes badgePulse {
-      0%, 100% { box-shadow: 0 0 0 rgba(251, 146, 60, 0); }
-      50% { box-shadow: 0 0 22px rgba(251, 146, 60, 0.3); }
-    }
-
-    @keyframes scanLine {
-      0%, 18% { transform: translateX(-140%); }
-      40%, 100% { transform: translateX(140%); }
-    }
-
-    @keyframes tickerFade {
-      from { opacity: 0.2; transform: translateY(4px); }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(22px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes progressShine {
-      to { transform: translateX(150%); }
+    @keyframes shine {
+      0%, 18% { transform: translateX(-130%); }
+      42%, 100% { transform: translateX(140%); }
     }
 
-    @keyframes floatBits {
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0.3; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shineBar {
+      to { transform: translateX(155%); }
+    }
+
+    @keyframes rise {
       from {
-        transform: translate3d(0, 0, 0) scale(0.8);
+        transform: translateY(0) rotate(0deg);
         opacity: 0;
       }
-      25% {
-        opacity: 1;
-      }
+      25% { opacity: 1; }
       to {
-        transform: translate3d(0, -96px, 0) scale(1.2);
+        transform: translateY(-120px) rotate(35deg);
         opacity: 0;
       }
     }
 
-    @media (max-width: 640px) {
-      .layout {
-        grid-template-columns: 1fr;
+    @media (max-width: 760px) {
+      .toast {
+        grid-template-columns: 54px 1fr;
+        gap: 11px;
+        padding: 11px 12px;
+      }
+
+      .pixel-icon {
+        width: 54px;
+        height: 54px;
+        font-size: 24px;
+      }
+
+      .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .toast-title {
+        line-height: 1.25;
+      }
+
+      .actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .handle {
         text-align: center;
       }
 
-      .crest {
-        margin-inline: auto;
-      }
-
-      .lead {
-        margin-inline: auto;
-      }
-
-      .ticker-wrap {
-        justify-content: center;
-      }
-
-      .footer {
-        grid-template-columns: 1fr;
-        justify-items: center;
-      }
-
-      .server-hint {
-        text-align: center;
-      }
-
-      .progress-meta {
-        font-size: 10px;
+      .progress-head {
+        font-size: 11px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="stage">
-    <section class="widget" aria-label="Telegram achievement widget">
-      <div class="achievement-tag">
-        <span class="achievement-tag-dot" aria-hidden="true"></span>
-        Achievement Unlocked
+  <main class="scene">
+    <section class="toast" aria-label="Achievement toast">
+      <div class="pixel-icon" aria-hidden="true">🍰</div>
+      <div>
+        <h2 class="toast-title">Достижение получено!</h2>
+        <p class="toast-sub" id="toastSub">17 лет :D • Переход в TG выполнен</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Telegram widget details">
+      <h1 class="headline">TG-виджет: <span id="tgTitle">@yapponecc1</span></h1>
+      <p class="description" id="description">
+        Здесь уют, новости и сервер в одном месте. Нажимай кнопку ниже, заходи в Telegram и получай доступ к самому живому разделу комьюнити.
+      </p>
+      <p class="ticker" id="ticker">Сервер найдешь в Telegram, закреп в шапке.</p>
+
+      <div class="meta-grid">
+        <article class="meta-item">
+          <p class="meta-label">Ник</p>
+          <p class="meta-value" id="metaNick">@yapponecc1</p>
+        </article>
+        <article class="meta-item">
+          <p class="meta-label">Статус</p>
+          <p class="meta-value green" id="metaStatus">ONLINE</p>
+        </article>
+        <article class="meta-item">
+          <p class="meta-label">Левел</p>
+          <p class="meta-value orange" id="metaLevel">17</p>
+        </article>
+        <article class="meta-item">
+          <p class="meta-label">Награда</p>
+          <p class="meta-value">VIP Access</p>
+        </article>
       </div>
 
-      <div class="layout">
-        <div class="crest" aria-hidden="true">
-          <svg viewBox="0 0 24 24" role="img" aria-label="Telegram icon">
-            <path d="M9.8 15.6 9.4 21c.6 0 .8-.3 1.2-.6l2.8-2.6 5.8 4.2c1.1.6 1.9.3 2.2-1l3.9-18.1h.1c.4-1.8-.7-2.5-1.8-2.1L1.8 8.7c-1.7.7-1.7 1.6-.3 2l5.6 1.8L20 4.4c.6-.4 1.2-.1.8.2"></path>
-          </svg>
+      <div class="progress-box">
+        <div class="progress-head">
+          <span>Прогресс к бонусу</span>
+          <span id="progressValue">0%</span>
         </div>
-
-        <div>
-          <h1 id="tgTitle">Название вашего TG</h1>
-          <p class="lead">
-            Подпишись и забери доступ к движу. Новый уровень комьюнити открыт, а сервер уже ждёт тебя внутри.
-          </p>
-
-          <div class="ticker-wrap">
-            <span class="ticker-label">Сейчас:</span>
-            <span class="ticker" id="tickerText">Эпичный апгрейд сообщества</span>
-          </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
       </div>
 
-      <div class="footer">
-        <p class="server-hint" id="serverHint"><strong>Сервер найдёте тут:</strong> @your_tg</p>
-        <a class="join-btn" id="joinBtn" href="https://t.me/your_tg" target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9.8 15.6 9.4 21c.6 0 .8-.3 1.2-.6l2.8-2.6 5.8 4.2c1.1.6 1.9.3 2.2-1l3.9-18.1h.1c.4-1.8-.7-2.5-1.8-2.1L1.8 8.7c-1.7.7-1.7 1.6-.3 2l5.6 1.8L20 4.4c.6-.4 1.2-.1.8.2"></path>
-          </svg>
-          Войти в Telegram
+      <div class="actions">
+        <a class="join-btn" id="joinBtn" href="https://t.me/yapponecc1" target="_blank" rel="noopener noreferrer">
+          Открыть Telegram
         </a>
-      </div>
-
-      <div class="progress-wrap" aria-hidden="true">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-
-      <div class="progress-meta">
-        <span>Комьюнити буст</span>
-        <span id="progressValue">0%</span>
+        <div class="handle" id="handleText">Сервер: @yapponecc1</div>
       </div>
     </section>
 
     <div class="particles" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
-  </div>
+  </main>
 
   <script>
-    const widgetData = {
-      title: "Мой TG: Название канала",
-      handle: "@your_tg",
-      telegramUrl: "https://t.me/your_tg",
-      serverLabel: "Сервер найдёте тут:",
-      progressTarget: 92
+    const data = {
+      nick: "yapponecc1",
+      level: 17,
+      telegramUrl: "https://t.me/yapponecc1",
+      progressTarget: 93,
+      toastSubtitle: "17 лет :D • Переход в TG выполнен"
     };
 
-    const tickerLines = [
-      "Эпичный апгрейд сообщества",
-      "Новый сезон активностей открыт",
-      "Сервер и чат уже онлайн",
-      "Заходи и получай роль участника"
+    const tickerMessages = [
+      "Сервер найдешь в Telegram, закреп в шапке.",
+      "Внутри: общение, анонсы, ивенты, движ.",
+      "Залетай в @yapponecc1 и забирай роль участника.",
+      "Нажми кнопку, чтобы открыть канал за секунду."
     ];
 
     const tgTitle = document.getElementById("tgTitle");
-    const serverHint = document.getElementById("serverHint");
+    const metaNick = document.getElementById("metaNick");
+    const metaLevel = document.getElementById("metaLevel");
+    const toastSub = document.getElementById("toastSub");
     const joinBtn = document.getElementById("joinBtn");
-    const tickerText = document.getElementById("tickerText");
-    const progressBar = document.getElementById("progressBar");
+    const handleText = document.getElementById("handleText");
+    const ticker = document.getElementById("ticker");
+    const progressFill = document.getElementById("progressFill");
     const progressValue = document.getElementById("progressValue");
 
-    tgTitle.textContent = widgetData.title;
-    serverHint.innerHTML = "<strong>" + widgetData.serverLabel + "</strong> " + widgetData.handle;
-    joinBtn.href = widgetData.telegramUrl;
+    const handle = "@" + data.nick;
+    tgTitle.textContent = handle;
+    metaNick.textContent = handle;
+    metaLevel.textContent = String(data.level);
+    toastSub.textContent = data.toastSubtitle;
+    joinBtn.href = data.telegramUrl;
+    handleText.textContent = "Сервер: " + handle;
 
-    let idx = 0;
+    let tickerIndex = 0;
     setInterval(() => {
-      idx = (idx + 1) % tickerLines.length;
-      tickerText.style.animation = "none";
-      void tickerText.offsetWidth;
-      tickerText.style.animation = "tickerFade 500ms ease";
-      tickerText.textContent = tickerLines[idx];
-    }, 2400);
+      tickerIndex = (tickerIndex + 1) % tickerMessages.length;
+      ticker.style.animation = "none";
+      void ticker.offsetWidth;
+      ticker.style.animation = "fadeUp 420ms ease both";
+      ticker.textContent = tickerMessages[tickerIndex];
+    }, 2500);
 
-    let val = 0;
+    let progress = 0;
     const progressTimer = setInterval(() => {
-      val += 2;
-      if (val >= widgetData.progressTarget) {
-        val = widgetData.progressTarget;
+      progress += 1;
+      if (progress >= data.progressTarget) {
+        progress = data.progressTarget;
         clearInterval(progressTimer);
       }
-      progressBar.style.setProperty("--p", val + "%");
-      progressValue.textContent = val + "%";
-    }, 32);
+      progressFill.style.setProperty("--w", progress + "%");
+      progressValue.textContent = progress + "%";
+    }, 28);
   </script>
 </body>
 </html>
