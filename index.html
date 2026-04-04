@@ -126,7 +126,7 @@
       align-items: center;
     }
 
-    .streak-icon,
+    .streak-icon-wrap,
     .gift-icon-wrap {
       width: 42px;
       height: 42px;
@@ -142,9 +142,7 @@
       place-items: center;
     }
 
-    .streak-icon {
-      font-size: 20px;
-      line-height: 1;
+    .streak-icon-wrap {
       background: linear-gradient(180deg, rgba(84, 34, 20, 0.82), rgba(35, 16, 12, 0.82));
     }
 
@@ -200,6 +198,21 @@
       border: 1px solid rgba(187, 209, 231, 0.22);
       border-radius: 4px;
       padding: 3px 4px;
+    }
+
+    .side-sub {
+      margin-top: 4px;
+      color: #9fd4ff;
+      font-size: clamp(7px, 0.5vw, 9px);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: rgba(9, 19, 31, 0.56);
+      border: 1px solid rgba(154, 189, 222, 0.2);
+      border-radius: 4px;
+      padding: 3px 4px;
+      text-align: center;
     }
 
     .gift-name {
@@ -347,7 +360,7 @@
         grid-template-columns: 36px minmax(0, 1fr);
       }
 
-      .streak-icon,
+      .streak-icon-wrap,
       .gift-icon-wrap {
         width: 36px;
         height: 36px;
@@ -413,12 +426,17 @@
     <aside class="side-box" aria-label="Top streak box">
       <div class="side-title">TOP STREAK</div>
       <div class="side-main">
-        <div class="streak-icon" aria-hidden="true">🔥</div>
+        <div class="streak-icon-wrap" aria-hidden="true">
+          <img class="gift-image" id="topStreakImage" alt="streak gift icon">
+          <div class="gift-fallback" id="topStreakFallback">🔥</div>
+        </div>
         <div class="side-lines">
           <div class="side-nick" id="streakNick">—</div>
-          <div class="side-value" id="streakValue">0 streak</div>
+          <div class="side-value" id="streakCoins">0 coins</div>
+          <div class="side-sub" id="streakValue">0 streak</div>
         </div>
       </div>
+      <div class="gift-name" id="streakGiftName">No gifts yet</div>
     </aside>
 
     <section class="toast" aria-label="Minecraft achievement widget">
@@ -498,14 +516,20 @@
     const tgName = document.getElementById("tgName");
 
     const streakNickEl = document.getElementById("streakNick");
+    const streakCoinsEl = document.getElementById("streakCoins");
     const streakValueEl = document.getElementById("streakValue");
+    const streakGiftNameEl = document.getElementById("streakGiftName");
     const giftNickEl = document.getElementById("giftNick");
     const giftValueEl = document.getElementById("giftValue");
     const giftNameEl = document.getElementById("giftName");
     const topGiftImageEl = document.getElementById("topGiftImage");
     const topGiftFallbackEl = document.getElementById("topGiftFallback");
+    const topStreakImageEl = document.getElementById("topStreakImage");
+    const topStreakFallbackEl = document.getElementById("topStreakFallback");
     let topGiftImageCandidates = [];
     let topGiftImageIdx = 0;
+    let topStreakImageCandidates = [];
+    let topStreakImageIdx = 0;
 
     let idx = 0;
     let liveSocket = null;
@@ -518,15 +542,19 @@
     const tops = {
       streakNick: "",
       streakCount: 0,
+      streakCoins: 0,
+      streakGiftName: "",
+      streakImageUrl: "",
       giftNick: "",
       giftCoins: 0,
       giftName: "",
       giftImageUrl: ""
     };
 
-    const knownGiftImages = {
-      rose: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"
-    };
+    const knownGiftImages = new Map([
+      ["rose", "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"],
+      ["роза", "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"]
+    ]);
 
     function translitRuToLat(input) {
       const map = {
@@ -563,8 +591,18 @@
     function getKnownGiftFallbackByName(giftName) {
       const name = String(giftName || "").toLowerCase().trim();
       if (!name) return "";
-      if (name.includes("rose") || name.includes("роза")) return knownGiftImages.rose;
+      if (knownGiftImages.has(name)) return knownGiftImages.get(name);
+      for (const [key, url] of knownGiftImages.entries()) {
+        if (name.includes(key)) return url;
+      }
       return "";
+    }
+
+    function rememberGiftImageByName(giftName, imageUrl) {
+      const key = String(giftName || "").toLowerCase().trim();
+      const normalized = normalizeImageUrl(imageUrl);
+      if (!key || !normalized) return;
+      knownGiftImages.set(key, normalized);
     }
 
     function renderGiftIcon(url, giftName = "") {
@@ -600,6 +638,41 @@
       }
       topGiftImageEl.style.display = "none";
       topGiftFallbackEl.style.display = "grid";
+    };
+
+    function renderStreakIcon(url, giftName = "") {
+      const normalized = normalizeImageUrl(url);
+      const fallbackByName = getKnownGiftFallbackByName(giftName);
+
+      if (!normalized && !fallbackByName) {
+        topStreakImageEl.removeAttribute("src");
+        topStreakImageEl.style.display = "none";
+        topStreakFallbackEl.style.display = "grid";
+        topStreakImageCandidates = [];
+        topStreakImageIdx = 0;
+        return;
+      }
+
+      topStreakImageCandidates = buildImageCandidates(normalized, giftName);
+      topStreakImageIdx = 0;
+      topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
+      topStreakImageEl.style.display = "block";
+      topStreakFallbackEl.style.display = "none";
+    }
+
+    topStreakImageEl.onload = () => {
+      topStreakImageEl.style.display = "block";
+      topStreakFallbackEl.style.display = "none";
+    };
+
+    topStreakImageEl.onerror = () => {
+      if (topStreakImageIdx + 1 < topStreakImageCandidates.length) {
+        topStreakImageIdx += 1;
+        topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
+        return;
+      }
+      topStreakImageEl.style.display = "none";
+      topStreakFallbackEl.style.display = "grid";
     };
 
     function normalizeImageUrl(url) {
@@ -688,6 +761,10 @@
         if (!result.includes(normalized)) result.push(normalized);
       }
 
+      // Если подарок распознан по имени (например Rose), используем его иконку в приоритете.
+      const fallbackByName = getKnownGiftFallbackByName(giftName);
+      if (fallbackByName) pushCandidate(fallbackByName);
+
       if (direct) {
         pushCandidate(direct);
 
@@ -702,9 +779,6 @@
           pushCandidate(resourceVariant);
         }
       }
-
-      const fallbackByName = getKnownGiftFallbackByName(giftName);
-      if (fallbackByName) pushCandidate(fallbackByName);
 
       const withProxy = [];
       for (const candidate of result) {
@@ -722,7 +796,10 @@
 
     function renderTops() {
       streakNickEl.textContent = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
+      streakCoinsEl.textContent = tops.streakCoins > 0 ? (tops.streakCoins + " coins") : "0 coins";
       streakValueEl.textContent = tops.streakCount > 0 ? (tops.streakCount + " streak") : "0 streak";
+      streakGiftNameEl.textContent = tops.streakGiftName || "No gifts yet";
+      renderStreakIcon(tops.streakImageUrl, tops.streakGiftName);
 
       giftNickEl.textContent = tops.giftNick ? toMinecraftNick(tops.giftNick) : "—";
       giftValueEl.textContent = tops.giftCoins > 0 ? (tops.giftCoins + " coins") : "0 coins";
@@ -734,6 +811,9 @@
     window.updateAchievementTops = (payload = {}) => {
       if (typeof payload.streakNick === "string") tops.streakNick = payload.streakNick;
       if (typeof payload.streakCount === "number") tops.streakCount = payload.streakCount;
+      if (typeof payload.streakCoins === "number") tops.streakCoins = payload.streakCoins;
+      if (typeof payload.streakGiftName === "string") tops.streakGiftName = payload.streakGiftName;
+      if (typeof payload.streakImageUrl === "string") tops.streakImageUrl = payload.streakImageUrl;
       if (typeof payload.giftNick === "string") tops.giftNick = payload.giftNick;
       if (typeof payload.giftCoins === "number") tops.giftCoins = payload.giftCoins;
       if (typeof payload.giftName === "string") tops.giftName = payload.giftName;
@@ -966,6 +1046,7 @@
       tops.giftCoins = Math.round(topGift.value);
       tops.streakNick = topStreak.nick;
       tops.streakCount = Math.round(topStreak.value);
+      tops.streakCoins = Math.round(giftTotalsByUser.get(topStreak.nick) || 0);
 
       if (topGift.nick && giftMetaByUser.has(topGift.nick)) {
         const meta = giftMetaByUser.get(topGift.nick);
@@ -974,6 +1055,15 @@
       } else {
         tops.giftName = "No gifts yet";
         tops.giftImageUrl = "";
+      }
+
+      if (topStreak.nick && giftMetaByUser.has(topStreak.nick)) {
+        const streakMeta = giftMetaByUser.get(topStreak.nick);
+        tops.streakGiftName = streakMeta.name || "Gift";
+        tops.streakImageUrl = streakMeta.imageUrl || "";
+      } else {
+        tops.streakGiftName = "No gifts yet";
+        tops.streakImageUrl = "";
       }
 
       renderTops();
@@ -1009,6 +1099,7 @@
           name: giftName,
           imageUrl: giftImage
         });
+        rememberGiftImageByName(giftName, giftImage);
 
         const streakFromGift = extractStreakValue(payload);
         streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
@@ -1095,6 +1186,9 @@
         window.updateAchievementTops({
           streakNick: "Mega_Player_1",
           streakCount: 9,
+          streakCoins: 77,
+          streakGiftName: "Rose",
+          streakImageUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp",
           giftNick: "KZX",
           giftCoins: 120,
           giftName: "Rose",
