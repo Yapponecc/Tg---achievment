@@ -599,6 +599,72 @@
       return value;
     }
 
+    function looksLikeImageUrl(value) {
+      const url = normalizeImageUrl(value);
+      if (!url) return false;
+      const lower = url.toLowerCase();
+      return (
+        lower.includes("tiktokcdn") ||
+        lower.includes("webcast") ||
+        lower.includes("gift") ||
+        lower.includes("icon") ||
+        lower.includes("image")
+      );
+    }
+
+    function collectImageCandidatesFromObject(node, acc = [], depth = 0) {
+      if (depth > 6 || node === null || node === undefined) return acc;
+
+      if (typeof node === "string") {
+        const normalized = normalizeImageUrl(node);
+        if (normalized) acc.push(normalized);
+        return acc;
+      }
+
+      if (Array.isArray(node)) {
+        for (const item of node) {
+          collectImageCandidatesFromObject(item, acc, depth + 1);
+        }
+        return acc;
+      }
+
+      if (typeof node !== "object") return acc;
+
+      for (const [key, value] of Object.entries(node)) {
+        const keyLower = String(key).toLowerCase();
+
+        if (typeof value === "string") {
+          const normalized = normalizeImageUrl(value);
+          if (!normalized) continue;
+
+          if (
+            keyLower.includes("url") ||
+            keyLower.includes("image") ||
+            keyLower.includes("icon") ||
+            keyLower.includes("picture")
+          ) {
+            acc.push(normalized);
+          } else if (looksLikeImageUrl(normalized)) {
+            acc.push(normalized);
+          }
+          continue;
+        }
+
+        if (Array.isArray(value) && keyLower.includes("url")) {
+          for (const maybeUrl of value) {
+            const normalized = normalizeImageUrl(maybeUrl);
+            if (normalized) acc.push(normalized);
+          }
+        }
+
+        if (typeof value === "object" && value !== null) {
+          collectImageCandidatesFromObject(value, acc, depth + 1);
+        }
+      }
+
+      return acc;
+    }
+
     function buildImageCandidates(url) {
       const direct = normalizeImageUrl(url);
       if (!direct) return [];
@@ -785,22 +851,41 @@
     }
 
     function extractGiftImage(payload) {
-      const raw = firstNonEmpty(
+      const preferred = [
         getDeep(payload, "giftPictureUrl"),
         getDeep(payload, "giftPicture"),
         getDeep(payload, "giftImageUrl"),
         getDeep(payload, "gift.imageUrl"),
         getDeep(payload, "gift.icon"),
         getDeep(payload, "gift.icon.url"),
+        getDeep(payload, "gift.icon.url_list.0"),
+        getDeep(payload, "gift.url_list.0"),
+        getDeep(payload, "gift.image.url_list.0"),
         getDeep(payload, "giftData.giftPictureUrl"),
         getDeep(payload, "giftData.giftPictureUrlNoWebp"),
         getDeep(payload, "giftData.giftPicture"),
+        getDeep(payload, "giftData.giftPicture.url_list.0"),
         getDeep(payload, "giftData.imageUrl"),
         getDeep(payload, "giftData.image.url"),
+        getDeep(payload, "giftData.image.url_list.0"),
         getDeep(payload, "imageUrl"),
         getDeep(payload, "icon")
-      );
-      return normalizeImageUrl(raw);
+      ]
+        .map((v) => normalizeImageUrl(v))
+        .filter(Boolean);
+
+      if (preferred.length > 0) return preferred[0];
+
+      const deepCandidates = collectImageCandidatesFromObject(payload)
+        .map((v) => normalizeImageUrl(v))
+        .filter(Boolean);
+
+      if (deepCandidates.length > 0) {
+        const priority = deepCandidates.find((url) => looksLikeImageUrl(url));
+        return priority || deepCandidates[0];
+      }
+
+      return "";
     }
 
     function extractStreakValue(payload) {
