@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -101,7 +101,7 @@
     }
 
     .line {
-      margin-top: 10px;
+      margin-top: 0;
       color: var(--text);
       font-size: clamp(12px, 1.45vw, 23px);
       line-height: 1.35;
@@ -112,10 +112,10 @@
 
     .line-row {
       margin-top: 10px;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
     }
 
     .tg-tag {
@@ -134,6 +134,7 @@
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
       flex: 0 0 auto;
       opacity: 0.95;
+      justify-self: end;
     }
 
     .tg-tag svg {
@@ -195,11 +196,59 @@
       }
 
       .line {
-        margin-top: 0;
+        font-size: clamp(10px, 2.7vw, 14px);
       }
 
       .line-row {
         margin-top: 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .line-row {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        align-items: start;
+      }
+
+      .tg-tag {
+        justify-self: start;
+      }
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 6px;
+      }
+
+      .toast {
+        grid-template-columns: 50px 1fr;
+        gap: 8px;
+        padding: 8px 9px 8px 8px;
+      }
+
+      .icon-shell {
+        width: 50px;
+        height: 50px;
+      }
+
+      .icon {
+        width: 36px;
+        height: 36px;
+      }
+
+      .title {
+        font-size: clamp(11px, 4.4vw, 14px);
+      }
+
+      .line {
+        font-size: clamp(10px, 3.9vw, 13px);
+        line-height: 1.3;
+      }
+
+      .tg-tag {
+        font-size: 11px;
+        padding: 4px 6px;
       }
     }
   </style>
@@ -239,7 +288,7 @@
     const tg = "@yapponecc1";
     const lines = [
       "35 лет :D • Уже зашел? Мега хорош!",
-      "Сервер уже в Telegram: " + tg
+      "Сервер уже в Telegram"
     ];
 
     const minDelay = 4000;
