@@ -3,22 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft Achievement + Side Tops</title>
+  <title>Telegram Achievement Widget</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
-      --frame: #6a737c;
-      --frame-dark: #1a1c20;
-      --panel-top: rgba(45, 49, 56, 0.94);
-      --panel-bottom: rgba(16, 18, 22, 0.95);
-      --title: #f2de63;
-      --text: #f4f7ff;
-      --glow: rgba(119, 197, 255, 0.22);
-      --blue: #7bc8ff;
-      --pixel-line: rgba(188, 213, 235, 0.26);
-      --pixel-fill: rgba(11, 20, 32, 0.72);
+      --frame: #6d7680;
+      --frame-dark: #171a1f;
+      --title: #f4df63;
+      --text: #f3f7ff;
+      --tg-blue: #66c4ff;
+      --panel-top: rgba(45, 50, 58, 0.94);
+      --panel-bot: rgba(14, 17, 22, 0.96);
+      --glow: rgba(95, 177, 255, 0.22);
     }
 
     * {
@@ -36,275 +34,63 @@
 
     body {
       font-family: "Press Start 2P", monospace;
-      pointer-events: none;
-      padding: 10px;
       display: grid;
       place-items: start center;
+      padding: 10px;
+      pointer-events: none;
     }
 
-    .overlay {
-      width: min(1180px, 100%);
-      display: grid;
-      grid-template-columns: 220px minmax(420px, 1fr) 220px;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .side-box,
-    .toast {
+    .widget {
+      width: min(860px, 100%);
       border: 2px solid var(--frame);
-      border-radius: 8px;
-      background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+      border-radius: 10px;
+      padding: 12px;
+      background:
+        linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 5px);
       box-shadow:
         inset 0 0 0 2px var(--frame-dark),
-        0 10px 30px rgba(0, 0, 0, 0.42),
-        0 0 18px var(--glow);
-      outline: 1px solid rgba(203, 224, 245, 0.2);
+        0 12px 30px rgba(0, 0, 0, 0.42),
+        0 0 20px var(--glow);
+      outline: 1px solid rgba(194, 220, 245, 0.2);
       outline-offset: -4px;
       position: relative;
       overflow: hidden;
+      animation: intro 1200ms cubic-bezier(.19, .82, .21, 1) both;
     }
 
-    .side-box::after,
-    .toast::after {
+    .widget::after {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: 10px;
-      background: linear-gradient(100deg, transparent 12%, rgba(255, 255, 255, 0.22) 45%, transparent 72%);
+      background: linear-gradient(105deg, transparent 12%, rgba(255, 255, 255, 0.2) 46%, transparent 72%);
       transform: translateX(-135%);
-      animation: shine 10s ease-in-out infinite;
+      animation: shine 11s ease-in-out infinite;
       pointer-events: none;
     }
 
-    .side-box {
-      padding: 0;
-      min-height: 118px;
-      background:
-        linear-gradient(180deg, rgba(42, 50, 62, 0.96), rgba(12, 16, 24, 0.97)),
-        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 5px),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0 1px, transparent 1px 5px);
-    }
-
-    .side-box::before {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      border: 1px solid var(--pixel-line);
-      border-radius: 5px;
-      pointer-events: none;
-    }
-
-    .side-title {
-      color: #f2de63;
-      font-size: clamp(7px, 0.52vw, 9px);
-      text-shadow: 0 2px 0 rgba(84, 72, 20, 0.9);
-      text-align: center;
-      margin: 0 0 6px;
-      letter-spacing: 0.2px;
-      background: rgba(11, 20, 32, 0.72);
-      border: 1px solid rgba(163, 191, 220, 0.26);
-      border-radius: 4px;
-      padding: 4px 5px;
-      line-height: 1.2;
-    }
-
-    .side-content {
-      position: relative;
-      z-index: 4;
-      padding: 7px;
-    }
-
-    .side-remote-frame {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 304px;
-      height: 120px;
-      border: 0;
-      z-index: 0;
-      transform: translate(-50%, -50%) scale(1);
-      transform-origin: center center;
-      pointer-events: none;
-      filter: saturate(1.08) contrast(1.08) brightness(0.9);
-    }
-
-    .side-remote-mask {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      background:
-        linear-gradient(180deg, rgba(5, 12, 20, 0.4) 0%, rgba(5, 12, 20, 0.1) 36%, rgba(5, 12, 20, 0.55) 100%),
-        linear-gradient(90deg, rgba(5, 12, 20, 0.38), rgba(5, 12, 20, 0.04) 40%, rgba(5, 12, 20, 0.38));
-      pointer-events: none;
-    }
-
-    .side-box[aria-label="Top streak box"] .side-title {
-      color: #ffd98a;
-      text-shadow: 0 2px 0 rgba(97, 56, 14, 0.9);
-    }
-
-    .side-box[aria-label="Top gift box"] .side-title {
-      color: #9ad9ff;
-      text-shadow: 0 2px 0 rgba(28, 70, 108, 0.9);
-    }
-
-    .side-main {
+    .row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 4px;
-      align-items: center;
-    }
-
-    .streak-icon-wrap,
-    .gift-icon-wrap {
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(203, 226, 246, 0.58);
-      border-radius: 4px;
-      background: rgba(20, 34, 52, 0.78);
-      box-shadow:
-        inset 0 0 0 1px rgba(10, 18, 30, 0.9),
-        0 0 8px rgba(85, 167, 234, 0.25);
-      position: relative;
-      overflow: hidden;
-      display: none;
-      place-items: center;
-    }
-
-    .streak-icon-wrap {
-      background: linear-gradient(180deg, rgba(84, 34, 20, 0.82), rgba(35, 16, 12, 0.82));
-    }
-
-    .gift-icon-wrap {
-      background: linear-gradient(180deg, rgba(26, 50, 80, 0.82), rgba(14, 25, 41, 0.82));
-    }
-
-    .gift-image {
-      position: relative;
-      z-index: 2;
-      width: calc(100% - 6px);
-      height: calc(100% - 6px);
-      object-fit: contain;
-      image-rendering: auto;
-      display: none;
-      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
-      pointer-events: none;
-    }
-
-    .gift-fallback {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      font-size: 20px;
-      line-height: 1;
-      display: grid;
-      place-items: center;
-      width: 100%;
-      height: 100%;
-    }
-
-    .gift-icon-wrap::before,
-    .streak-icon-wrap::before {
-      content: "";
-      position: absolute;
-      inset: 2px;
-      border-radius: 3px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.28)),
-        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 4px);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .gift-icon-wrap.has-image .gift-fallback,
-    .streak-icon-wrap.has-image .gift-fallback {
-      display: none;
-    }
-
-    .side-lines {
-      min-width: 0;
-    }
-
-    .side-nick {
-      color: #eef7ff;
-      font-size: clamp(8px, 0.66vw, 11px);
-      line-height: 1.25;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.85);
-      letter-spacing: 0.1px;
-      text-align: center;
-    }
-
-    .side-value {
-      margin-top: 4px;
-      color: #f2de63;
-      font-size: clamp(8px, 0.62vw, 11px);
-      line-height: 1.2;
-      text-shadow: 0 1px 0 rgba(74, 66, 20, 0.95);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      background: var(--pixel-fill);
-      border: 1px solid rgba(187, 209, 231, 0.22);
-      border-radius: 4px;
-      padding: 3px 4px;
-      text-align: center;
-    }
-
-    .side-sub {
-      margin-top: 4px;
-      color: #9fd4ff;
-      font-size: clamp(7px, 0.5vw, 9px);
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      background: rgba(9, 19, 31, 0.56);
-      border: 1px solid rgba(154, 189, 222, 0.2);
-      border-radius: 4px;
-      padding: 3px 4px;
-      text-align: center;
-    }
-
-    .gift-name {
-      margin-top: 4px;
-      color: #93d3ff;
-      font-size: clamp(7px, 0.54vw, 9px);
-      line-height: 1.22;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      opacity: 0.95;
-      background: rgba(9, 19, 31, 0.56);
-      border: 1px solid rgba(154, 189, 222, 0.2);
-      border-radius: 4px;
-      padding: 3px 4px;
-    }
-
-    .toast {
-      display: grid;
-      grid-template-columns: 82px minmax(0, 1fr);
+      grid-template-columns: 84px minmax(0, 1fr);
       gap: 14px;
       align-items: center;
-      padding: 12px;
-      animation: intro 1120ms cubic-bezier(.18, .82, .2, 1) both;
+      position: relative;
+      z-index: 2;
     }
 
     .icon-shell {
-      width: 82px;
-      height: 82px;
-      border: 2px solid #c8c1ac;
+      width: 84px;
+      height: 84px;
+      border: 2px solid #c9c2ad;
       border-radius: 8px;
-      background: linear-gradient(180deg, #b46812, #99540c);
-      box-shadow: inset 0 0 0 2px rgba(38, 22, 9, 0.62), 0 5px 14px rgba(0, 0, 0, 0.45);
+      background: linear-gradient(180deg, #b66a14, #97530e);
+      box-shadow: inset 0 0 0 2px rgba(37, 23, 10, 0.63), 0 6px 14px rgba(0, 0, 0, 0.45);
       display: grid;
       place-items: center;
       overflow: hidden;
-      animation: bob 5.4s ease-in-out infinite;
+      animation: bob 5.8s ease-in-out infinite;
     }
 
     .icon {
@@ -318,40 +104,39 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .title {
       margin: 0;
       color: var(--title);
-      font-size: clamp(13px, 1.8vw, 22px);
+      font-size: clamp(13px, 1.85vw, 22px);
       line-height: 1.24;
-      text-shadow: 0 2px 0 rgba(74, 66, 20, 0.95);
-      letter-spacing: 0.25px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: 0 2px 0 rgba(74, 65, 20, 0.95);
+      letter-spacing: 0.2px;
     }
 
-    .tg-tag {
+    .tg-chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 7px;
+      gap: 6px;
+      max-width: 260px;
+      padding: 5px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(174, 225, 255, 0.7);
-      background: rgba(44, 132, 201, 0.3);
-      box-shadow: 0 0 8px rgba(69, 184, 255, 0.28);
+      border: 1px solid rgba(169, 221, 255, 0.7);
+      background: rgba(44, 133, 202, 0.28);
+      box-shadow: 0 0 8px rgba(70, 184, 255, 0.3);
       color: #ebf7ff;
       font-size: clamp(7px, 0.7vw, 10px);
-      line-height: 1.25;
-      white-space: nowrap;
-      max-width: 220px;
-      overflow: hidden;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.72);
+      white-space: nowrap;
+      overflow: hidden;
     }
 
-    .tg-tag svg {
+    .tg-chip svg {
       width: 10px;
       height: 10px;
       fill: #ffffff;
@@ -363,41 +148,41 @@
       text-overflow: ellipsis;
     }
 
+    .divider {
+      margin: 8px 0 0;
+      height: 1px;
+      border: 0;
+      background: linear-gradient(90deg, transparent, rgba(152, 194, 232, 0.66), transparent);
+      opacity: 0.9;
+    }
+
     .line {
-      margin: 9px 0 0;
+      margin: 10px 0 0;
       color: var(--text);
       font-size: clamp(9px, 1vw, 14px);
       line-height: 1.45;
-      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
-      transition: opacity 520ms ease, transform 520ms ease, filter 520ms ease;
-      letter-spacing: 0.12px;
-      min-height: 2.6em;
+      min-height: 2.7em;
       display: grid;
       align-content: center;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.8);
+      letter-spacing: 0.12px;
+      transition: opacity 900ms ease, transform 900ms ease, filter 900ms ease;
     }
 
     .line.is-hiding {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(7px);
       filter: blur(2px);
     }
 
-    .divider {
-      margin-top: 8px;
-      height: 1px;
-      border: 0;
-      background: linear-gradient(90deg, transparent, rgba(153, 194, 232, 0.65), transparent);
-      opacity: 0.85;
-    }
-
     @keyframes intro {
-      from { opacity: 0; transform: translateY(-18px) scale(0.98); }
+      from { opacity: 0; transform: translateY(-16px) scale(0.98); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     @keyframes shine {
-      0%, 14% { transform: translateX(-135%); }
-      35%, 100% { transform: translateX(140%); }
+      0%, 12% { transform: translateX(-135%); }
+      36%, 100% { transform: translateX(140%); }
     }
 
     @keyframes bob {
@@ -405,101 +190,36 @@
       50% { transform: translateY(-2px); }
     }
 
-    @media (max-width: 1100px) {
-      .overlay {
-        grid-template-columns: 190px minmax(360px, 1fr) 190px;
-      }
-
-      .side-main {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    @media (max-width: 860px) {
-      .overlay {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-
-      .side-box {
-        order: 2;
-      }
-
-      .toast {
-        order: 1;
-      }
-
-      .side-box {
-        min-height: 106px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body { padding: 6px; }
-
-      .toast {
-        grid-template-columns: 54px minmax(0, 1fr);
-        gap: 8px;
-        padding: 8px;
+    @media (max-width: 760px) {
+      .row {
+        grid-template-columns: 60px minmax(0, 1fr);
+        gap: 10px;
       }
 
       .icon-shell {
-        width: 54px;
-        height: 54px;
+        width: 60px;
+        height: 60px;
       }
 
       .icon {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
       }
 
       .title {
-        font-size: clamp(10px, 3.9vw, 12px);
+        font-size: clamp(10px, 3.9vw, 14px);
       }
 
       .line {
-        font-size: clamp(8px, 3vw, 10px);
+        font-size: clamp(8px, 3.1vw, 10px);
         min-height: 2.4em;
-      }
-
-      .tg-tag {
-        max-width: 160px;
-        font-size: 7px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="overlay" aria-label="Minecraft achievement overlay">
-    <aside class="side-box" aria-label="Top streak box">
-      <iframe
-        class="side-remote-frame"
-        id="streakRemoteFrame"
-        data-w="304"
-        data-h="120"
-        src="https://tikfinity.zerody.one/widget/tops?cid=2862987"
-        loading="eager"
-        referrerpolicy="no-referrer">
-      </iframe>
-      <div class="side-remote-mask" aria-hidden="true"></div>
-      <div class="side-content">
-        <div class="side-title">TOP STREAK</div>
-        <div class="side-main">
-          <div class="streak-icon-wrap" id="topStreakIconWrap" aria-hidden="true">
-            <img class="gift-image" id="topStreakImage" alt="streak gift icon" referrerpolicy="no-referrer" decoding="async">
-            <div class="gift-fallback" id="topStreakFallback">🔥</div>
-          </div>
-          <div class="side-lines">
-            <div class="side-nick" id="streakNick">—</div>
-            <div class="side-value" id="streakCoins">0 coins</div>
-            <div class="side-sub" id="streakValue">0 streak</div>
-          </div>
-        </div>
-        <div class="gift-name" id="streakGiftName">No gifts yet</div>
-      </div>
-    </aside>
-
-    <section class="toast" aria-label="Minecraft achievement widget">
+  <section class="widget" aria-label="Telegram achievement widget">
+    <div class="row">
       <div class="icon-shell" aria-hidden="true">
         <svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
           <rect width="16" height="16" fill="#8f4a0c"/>
@@ -518,867 +238,37 @@
       <div>
         <div class="title-row">
           <h1 class="title">Достижение получено!</h1>
-          <span class="tg-tag" id="tgTag" aria-label="Telegram">
+          <span class="tg-chip" aria-label="Telegram">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"></path>
+              <path d="M21.5 3.8c-.2-.2-.5-.3-.8-.2l-17.9 6.9c-.4.2-.7.6-.7 1s.2.8.6 1l4.5 1.8 1.8 5c.2.4.5.7 1 .7h.1c.4 0 .8-.3 1-.7l2.4-3 3.9 3c.4.3.9.3 1.3.1.4-.2.6-.6.7-1L22 4.7c0-.4-.1-.7-.5-.9Z"/>
             </svg>
             <span id="tgName" class="tg-name">@yapponecc1</span>
           </span>
         </div>
 
         <hr class="divider">
-        <p class="line" id="rotatingText" aria-live="polite">35 лет :D • Уже зашел? Мега хорош!</p>
+        <p class="line" id="rotatingText" aria-live="polite">Залетай в Telegram: yapponecc1</p>
       </div>
-    </section>
-
-    <aside class="side-box" aria-label="Top gift box">
-      <iframe
-        class="side-remote-frame"
-        id="giftRemoteFrame"
-        data-w="304"
-        data-h="120"
-        src="https://tikfinity.zerody.one/widget/topg?cid=2862987"
-        loading="eager"
-        referrerpolicy="no-referrer">
-      </iframe>
-      <div class="side-remote-mask" aria-hidden="true"></div>
-      <div class="side-content">
-        <div class="side-title">TOP GIFT</div>
-        <div class="side-main">
-          <div class="gift-icon-wrap" id="topGiftIconWrap" aria-hidden="true">
-            <img class="gift-image" id="topGiftImage" alt="gift icon" referrerpolicy="no-referrer" decoding="async">
-            <div class="gift-fallback" id="topGiftFallback">🎁</div>
-          </div>
-          <div class="side-lines">
-            <div class="side-nick" id="giftNick">—</div>
-            <div class="side-value" id="giftValue">0 coins</div>
-          </div>
-        </div>
-        <div class="gift-name" id="giftName">No gifts yet</div>
-      </div>
-    </aside>
-  </div>
+    </div>
+  </section>
 
   <script>
-    const tg = "@yapponecc1";
-    const debugConsole = true;
-
-    const liveSocketConfig = {
-      enabled: true,
-      url: "ws://localhost:21213/",
-      reconnectMs: 2500
-    };
-
-    // real = как есть из события, alias = замена по словарю, translit = авто-транслит кириллицы
-    const nicknameDisplayMode = "alias";
-    const nicknameAliases = {
-      "@yapponecc1": "@yapponecc1"
-    };
-
+    const tg = "yapponecc1";
     const lines = [
-      "35 лет :D • Уже зашел? Мега хорош!",
-      "Сервер уже в Telegram"
+      "Залетай в Telegram: yapponecc1",
+      "Уже зашел? Мега хорош!",
+      "Ник в TG: yapponecc1"
     ];
 
-    const minDelay = 4000;
-    const maxDelay = 6000;
-    const fadeMs = 520;
+    const minDelay = 8000;
+    const maxDelay = 10000;
+    const fadeMs = 900;
 
     const textEl = document.getElementById("rotatingText");
-    const tgName = document.getElementById("tgName");
-
-    const streakNickEl = document.getElementById("streakNick");
-    const streakCoinsEl = document.getElementById("streakCoins");
-    const streakValueEl = document.getElementById("streakValue");
-    const streakGiftNameEl = document.getElementById("streakGiftName");
-    const giftNickEl = document.getElementById("giftNick");
-    const giftValueEl = document.getElementById("giftValue");
-    const giftNameEl = document.getElementById("giftName");
-    const topGiftImageEl = document.getElementById("topGiftImage");
-    const topGiftFallbackEl = document.getElementById("topGiftFallback");
-    const topGiftIconWrapEl = document.getElementById("topGiftIconWrap");
-    const topStreakImageEl = document.getElementById("topStreakImage");
-    const topStreakFallbackEl = document.getElementById("topStreakFallback");
-    const topStreakIconWrapEl = document.getElementById("topStreakIconWrap");
-    const streakRemoteFrameEl = document.getElementById("streakRemoteFrame");
-    const giftRemoteFrameEl = document.getElementById("giftRemoteFrame");
-    let topGiftImageCandidates = [];
-    let topGiftImageIdx = 0;
-    let topStreakImageCandidates = [];
-    let topStreakImageIdx = 0;
-    let topGiftRenderToken = 0;
-    let topStreakRenderToken = 0;
-    let topGiftLastKey = "";
-    let topStreakLastKey = "";
-
-    function fitRemoteFrame(frameEl) {
-      if (!frameEl) return;
-      const srcW = Math.max(1, Number(frameEl.dataset.w) || 304);
-      const srcH = Math.max(1, Number(frameEl.dataset.h) || 120);
-      const host = frameEl.parentElement;
-      if (!host) return;
-
-      const hostW = Math.max(1, host.clientWidth);
-      const hostH = Math.max(1, host.clientHeight);
-      const scale = Math.min(hostW / srcW, hostH / srcH);
-      frameEl.style.width = srcW + "px";
-      frameEl.style.height = srcH + "px";
-      frameEl.style.transform = "translate(-50%, -50%) scale(" + scale.toFixed(4) + ")";
-    }
-
-    function fitRemoteFrames() {
-      fitRemoteFrame(streakRemoteFrameEl);
-      fitRemoteFrame(giftRemoteFrameEl);
-    }
-
-    window.addEventListener("resize", fitRemoteFrames);
-    requestAnimationFrame(fitRemoteFrames);
-    setTimeout(fitRemoteFrames, 250);
+    const tgEl = document.getElementById("tgName");
+    tgEl.textContent = "@" + tg;
 
     let idx = 0;
-    let liveSocket = null;
-    let reconnectTimer = null;
-
-    const giftTotalsByUser = new Map();
-    const streakBestByUser = new Map();
-    const giftMetaByUser = new Map();
-    const streakMetaByUser = new Map();
-
-    const tops = {
-      streakNick: "",
-      streakCount: 0,
-      streakCoins: 0,
-      streakGiftName: "",
-      streakImageUrl: "",
-      giftNick: "",
-      giftCoins: 0,
-      giftName: "",
-      giftImageUrl: ""
-    };
-
-    const knownGiftImages = new Map([
-      ["rose", "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"],
-      ["роза", "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp"]
-    ]);
-
-    function translitRuToLat(input) {
-      const map = {
-        а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh", з: "z", и: "i", й: "y",
-        к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f",
-        х: "kh", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya"
-      };
-      return input.split("").map((char) => {
-        const lower = char.toLowerCase();
-        if (!map[lower]) return char;
-        const value = map[lower];
-        return char === lower ? value : value.charAt(0).toUpperCase() + value.slice(1);
-      }).join("");
-    }
-
-    function formatNick(nick) {
-      if (nicknameDisplayMode === "alias") {
-        return nicknameAliases[nick] || nick;
-      }
-      if (nicknameDisplayMode === "translit") {
-        return translitRuToLat(nick);
-      }
-      return nick;
-    }
-
-    function toMinecraftNick(nick) {
-      const prepared = translitRuToLat(formatNick(String(nick || "").trim().replace(/^@+/, "")));
-      const cleaned = prepared.replace(/\s+/g, "_").replace(/[^A-Za-z0-9_]/g, "").slice(0, 16);
-      return cleaned || "Player";
-    }
-
-    tgName.textContent = toMinecraftNick(tg);
-
-    function getKnownGiftFallbackByName(giftName) {
-      const name = String(giftName || "").toLowerCase().trim();
-      if (!name) return "";
-      if (knownGiftImages.has(name)) return knownGiftImages.get(name);
-      for (const [key, url] of knownGiftImages.entries()) {
-        if (name.includes(key)) return url;
-      }
-      return "";
-    }
-
-    function rememberGiftImageByName(giftName, imageUrl) {
-      const key = String(giftName || "").toLowerCase().trim();
-      const normalized = normalizeImageUrl(imageUrl);
-      if (!key || !normalized) return;
-      // Для Rose/Роза держим проверенную иконку, не затираем ее случайным generic URL.
-      if (key.includes("rose") || key.includes("роза")) return;
-      knownGiftImages.set(key, normalized);
-    }
-
-    function showIcon(imgEl, fallbackEl, wrapEl) {
-      imgEl.style.display = "block";
-      imgEl.style.visibility = "visible";
-      imgEl.style.opacity = "1";
-      fallbackEl.style.display = "none";
-      if (wrapEl) wrapEl.classList.add("has-image");
-    }
-
-    function hideIcon(imgEl, fallbackEl, wrapEl) {
-      imgEl.style.display = "none";
-      imgEl.style.visibility = "hidden";
-      imgEl.style.opacity = "0";
-      fallbackEl.style.display = "grid";
-      if (wrapEl) wrapEl.classList.remove("has-image");
-    }
-
-    function addCacheBust(url, token) {
-      const normalized = normalizeImageUrl(url);
-      if (!normalized) return "";
-      const withoutOldBust = normalized.replace(/([?&])_ab=\d+/g, "").replace(/[?&]$/, "");
-      const glue = withoutOldBust.includes("?") ? "&" : "?";
-      return withoutOldBust + glue + "_ab=" + token;
-    }
-
-    function renderGiftIcon(url, giftName = "") {
-      const normalized = normalizeImageUrl(url);
-      const fallbackByName = getKnownGiftFallbackByName(giftName);
-      const key = String(giftName || "") + "|" + String(normalized || fallbackByName || "");
-      if (key !== topGiftLastKey) {
-        topGiftLastKey = key;
-        topGiftRenderToken += 1;
-      }
-
-      if (!normalized && !fallbackByName) {
-        topGiftImageEl.removeAttribute("src");
-        hideIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
-        topGiftImageCandidates = [];
-        topGiftImageIdx = 0;
-        return;
-      }
-
-      topGiftImageCandidates = buildImageCandidates(normalized, giftName)
-        .map((candidate) => addCacheBust(candidate, topGiftRenderToken));
-      topGiftImageIdx = 0;
-      topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
-      showIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
-    }
-
-    topGiftImageEl.onload = () => {
-      showIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
-    };
-
-    topGiftImageEl.onerror = () => {
-      if (topGiftImageIdx + 1 < topGiftImageCandidates.length) {
-        topGiftImageIdx += 1;
-        topGiftImageEl.src = topGiftImageCandidates[topGiftImageIdx];
-        return;
-      }
-      hideIcon(topGiftImageEl, topGiftFallbackEl, topGiftIconWrapEl);
-    };
-
-    function renderStreakIcon(url, giftName = "") {
-      const normalized = normalizeImageUrl(url);
-      const fallbackByName = getKnownGiftFallbackByName(giftName);
-      const key = String(giftName || "") + "|" + String(normalized || fallbackByName || "");
-      if (key !== topStreakLastKey) {
-        topStreakLastKey = key;
-        topStreakRenderToken += 1;
-      }
-
-      if (!normalized && !fallbackByName) {
-        topStreakImageEl.removeAttribute("src");
-        hideIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
-        topStreakImageCandidates = [];
-        topStreakImageIdx = 0;
-        return;
-      }
-
-      topStreakImageCandidates = buildImageCandidates(normalized, giftName)
-        .map((candidate) => addCacheBust(candidate, topStreakRenderToken));
-      topStreakImageIdx = 0;
-      topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
-      showIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
-    }
-
-    topStreakImageEl.onload = () => {
-      showIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
-    };
-
-    topStreakImageEl.onerror = () => {
-      if (topStreakImageIdx + 1 < topStreakImageCandidates.length) {
-        topStreakImageIdx += 1;
-        topStreakImageEl.src = topStreakImageCandidates[topStreakImageIdx];
-        return;
-      }
-      hideIcon(topStreakImageEl, topStreakFallbackEl, topStreakIconWrapEl);
-    };
-
-    function normalizeImageUrl(url) {
-      let value = String(url || "").trim();
-      if (!value) return "";
-      value = value.replace(/\\\//g, "/");
-      if (value.startsWith("//")) value = "https:" + value;
-      if (value.startsWith("http://")) value = "https://" + value.slice("http://".length);
-      if (!/^https?:\/\//i.test(value)) return "";
-      return value;
-    }
-
-    function looksLikeImageUrl(value) {
-      const url = normalizeImageUrl(value);
-      if (!url) return false;
-      const lower = url.toLowerCase();
-      return (
-        lower.includes("tiktokcdn") ||
-        lower.includes("webcast") ||
-        lower.includes("gift") ||
-        lower.includes("icon") ||
-        lower.includes("image")
-      );
-    }
-
-    function collectImageCandidatesFromObject(node, acc = [], depth = 0) {
-      if (depth > 6 || node === null || node === undefined) return acc;
-
-      if (typeof node === "string") {
-        const normalized = normalizeImageUrl(node);
-        if (normalized) acc.push(normalized);
-        return acc;
-      }
-
-      if (Array.isArray(node)) {
-        for (const item of node) {
-          collectImageCandidatesFromObject(item, acc, depth + 1);
-        }
-        return acc;
-      }
-
-      if (typeof node !== "object") return acc;
-
-      for (const [key, value] of Object.entries(node)) {
-        const keyLower = String(key).toLowerCase();
-
-        if (typeof value === "string") {
-          const normalized = normalizeImageUrl(value);
-          if (!normalized) continue;
-
-          if (
-            keyLower.includes("url") ||
-            keyLower.includes("image") ||
-            keyLower.includes("icon") ||
-            keyLower.includes("picture")
-          ) {
-            acc.push(normalized);
-          } else if (looksLikeImageUrl(normalized)) {
-            acc.push(normalized);
-          }
-          continue;
-        }
-
-        if (Array.isArray(value) && keyLower.includes("url")) {
-          for (const maybeUrl of value) {
-            const normalized = normalizeImageUrl(maybeUrl);
-            if (normalized) acc.push(normalized);
-          }
-        }
-
-        if (typeof value === "object" && value !== null) {
-          collectImageCandidatesFromObject(value, acc, depth + 1);
-        }
-      }
-
-      return acc;
-    }
-
-    function buildImageCandidates(url, giftName = "") {
-      const direct = normalizeImageUrl(url);
-      const result = [];
-
-      function pushCandidate(candidateUrl) {
-        const normalized = normalizeImageUrl(candidateUrl);
-        if (!normalized) return;
-        if (!result.includes(normalized)) result.push(normalized);
-      }
-
-      // Если подарок распознан по имени (например Rose), используем его иконку в приоритете.
-      const fallbackByName = getKnownGiftFallbackByName(giftName);
-      if (fallbackByName) pushCandidate(fallbackByName);
-
-      if (direct) {
-        pushCandidate(direct);
-
-        if (direct.includes("~tplv-obj.image")) {
-          pushCandidate(direct.replace("~tplv-obj.image", "~tplv-obj.webp"));
-          pushCandidate(direct.replace("~tplv-obj.image", ".png~tplv-obj.webp"));
-
-          const resourceVariant = direct.replace(
-            /\/img\/maliva\/webcast-va\/([^\/?~]+)~tplv-obj\.image/i,
-            "/img/maliva/webcast-va/resource/$1.png~tplv-obj.webp"
-          );
-          pushCandidate(resourceVariant);
-        }
-      }
-
-      const withProxy = [];
-      for (const candidate of result) {
-        const noProto = candidate.replace(/^https?:\/\//i, "");
-        const proxyUrl = "https://images.weserv.nl/?url=" + encodeURIComponent(noProto);
-        if (candidate.includes("tiktokcdn.com")) {
-          withProxy.push(proxyUrl);
-          withProxy.push(candidate);
-        } else {
-          withProxy.push(candidate);
-          withProxy.push(proxyUrl);
-        }
-      }
-
-      const unique = [];
-      for (const candidate of withProxy) {
-        if (!unique.includes(candidate)) unique.push(candidate);
-      }
-      return unique;
-    }
-
-    function renderTops() {
-      streakNickEl.textContent = tops.streakNick ? toMinecraftNick(tops.streakNick) : "—";
-      streakCoinsEl.textContent = tops.streakCoins > 0 ? (tops.streakCoins + " coins") : "0 coins";
-      streakValueEl.textContent = tops.streakCount > 0 ? (tops.streakCount + " streak") : "0 streak";
-      streakGiftNameEl.textContent = tops.streakGiftName || "No gifts yet";
-      renderStreakIcon(tops.streakImageUrl, tops.streakGiftName);
-
-      giftNickEl.textContent = tops.giftNick ? toMinecraftNick(tops.giftNick) : "—";
-      giftValueEl.textContent = tops.giftCoins > 0 ? (tops.giftCoins + " coins") : "0 coins";
-      giftNameEl.textContent = tops.giftName || "No gifts yet";
-
-      renderGiftIcon(tops.giftImageUrl, tops.giftName);
-    }
-
-    window.updateAchievementTops = (payload = {}) => {
-      if (typeof payload.streakNick === "string") tops.streakNick = payload.streakNick;
-      if (typeof payload.streakCount === "number") tops.streakCount = payload.streakCount;
-      if (typeof payload.streakCoins === "number") tops.streakCoins = payload.streakCoins;
-      if (typeof payload.streakGiftName === "string") tops.streakGiftName = payload.streakGiftName;
-      if (typeof payload.streakImageUrl === "string") tops.streakImageUrl = payload.streakImageUrl;
-      if (typeof payload.giftNick === "string") tops.giftNick = payload.giftNick;
-      if (typeof payload.giftCoins === "number") tops.giftCoins = payload.giftCoins;
-      if (typeof payload.giftName === "string") tops.giftName = payload.giftName;
-      if (typeof payload.giftImageUrl === "string") tops.giftImageUrl = payload.giftImageUrl;
-      renderTops();
-    };
-
-    renderTops();
-
-    function asNumber(value) {
-      const num = Number(value);
-      return Number.isFinite(num) ? num : 0;
-    }
-
-    function firstNonEmpty(...values) {
-      for (const value of values) {
-        if (value !== undefined && value !== null && value !== "") return value;
-      }
-      return "";
-    }
-
-    function getDeep(obj, path) {
-      if (!obj || typeof obj !== "object") return undefined;
-      const keys = path.split(".");
-      let current = obj;
-      for (const key of keys) {
-        if (!current || typeof current !== "object") return undefined;
-        current = current[key];
-      }
-      return current;
-    }
-
-    function tryParseJson(value) {
-      if (typeof value !== "string") return null;
-      const text = value.trim();
-      if (!text || (!text.startsWith("{") && !text.startsWith("["))) return null;
-      try {
-        return JSON.parse(text);
-      } catch {
-        return null;
-      }
-    }
-
-    function normalizeMessage(raw) {
-      let msg = raw;
-      if (typeof msg === "string") {
-        const parsed = tryParseJson(msg);
-        if (!parsed) return null;
-        msg = parsed;
-      }
-      if (!msg || typeof msg !== "object") return null;
-
-      if (typeof msg.data === "string") {
-        const parsed = tryParseJson(msg.data);
-        if (parsed) msg.data = parsed;
-      }
-      if (typeof msg.eventData === "string") {
-        const parsed = tryParseJson(msg.eventData);
-        if (parsed) msg.eventData = parsed;
-      }
-      if (msg.data && typeof msg.data === "object" && typeof msg.data.eventData === "string") {
-        const parsed = tryParseJson(msg.data.eventData);
-        if (parsed) msg.data.eventData = parsed;
-      }
-      return msg;
-    }
-
-    function detectEventType(msg, payload) {
-      const rawType = firstNonEmpty(
-        msg.eventName,
-        msg.event,
-        msg.type,
-        msg.name,
-        msg.action,
-        msg.topic,
-        getDeep(msg, "data.eventName"),
-        getDeep(msg, "data.event"),
-        getDeep(msg, "data.type"),
-        getDeep(msg, "eventData.eventName"),
-        getDeep(msg, "eventData.event"),
-        getDeep(payload, "eventName"),
-        getDeep(payload, "event"),
-        getDeep(payload, "type")
-      );
-      const type = String(rawType || "").toLowerCase();
-
-      if (type.includes("gift")) return "gift";
-      if (type.includes("streak")) return "streak";
-
-      const hasGiftShape = firstNonEmpty(
-        getDeep(payload, "giftName"),
-        getDeep(payload, "giftId"),
-        getDeep(payload, "coins"),
-        getDeep(payload, "diamondCount"),
-        getDeep(payload, "repeatCount")
-      );
-      if (hasGiftShape !== "") return "gift";
-
-      const hasStreakShape = firstNonEmpty(
-        getDeep(payload, "streak"),
-        getDeep(payload, "streakCount"),
-        getDeep(payload, "comboCount")
-      );
-      if (hasStreakShape !== "") return "streak";
-
-      return "";
-    }
-
-    function extractNick(payload) {
-      const raw = firstNonEmpty(
-        getDeep(payload, "nickname"),
-        getDeep(payload, "nickName"),
-        getDeep(payload, "displayName"),
-        getDeep(payload, "username"),
-        getDeep(payload, "userName"),
-        getDeep(payload, "uniqueId"),
-        getDeep(payload, "user.nickname"),
-        getDeep(payload, "user.nickName"),
-        getDeep(payload, "user.displayName"),
-        getDeep(payload, "user.username"),
-        getDeep(payload, "user.userName"),
-        getDeep(payload, "user.uniqueId"),
-        getDeep(payload, "fromUser.nickname"),
-        getDeep(payload, "fromUser.uniqueId"),
-        getDeep(payload, "trigger.nickname"),
-        getDeep(payload, "trigger.username")
-      );
-      return String(raw || "").trim();
-    }
-
-    function extractGiftScore(payload) {
-      const unitCoins = asNumber(firstNonEmpty(
-        getDeep(payload, "coins"),
-        getDeep(payload, "diamondCount"),
-        getDeep(payload, "diamonds"),
-        getDeep(payload, "giftCoins"),
-        getDeep(payload, "gift.diamondCount"),
-        getDeep(payload, "gift.diamond_count"),
-        getDeep(payload, "giftData.value"),
-        getDeep(payload, "value")
-      ));
-      const repeatCount = Math.max(1, asNumber(firstNonEmpty(
-        getDeep(payload, "repeatCount"),
-        getDeep(payload, "repeat_count"),
-        getDeep(payload, "comboCount"),
-        getDeep(payload, "combo"),
-        getDeep(payload, "giftCount"),
-        getDeep(payload, "count"),
-        getDeep(payload, "amount")
-      )) || 1);
-      return unitCoins > 0 ? unitCoins * repeatCount : repeatCount;
-    }
-
-    function extractGiftName(payload) {
-      return String(firstNonEmpty(
-        getDeep(payload, "giftName"),
-        getDeep(payload, "gift.name"),
-        getDeep(payload, "giftData.giftName"),
-        getDeep(payload, "giftData.name"),
-        getDeep(payload, "name")
-      ) || "Gift");
-    }
-
-    function extractGiftImage(payload) {
-      const preferred = [
-        getDeep(payload, "giftPictureUrl"),
-        getDeep(payload, "giftPicture"),
-        getDeep(payload, "giftImageUrl"),
-        getDeep(payload, "gift.imageUrl"),
-        getDeep(payload, "gift.icon"),
-        getDeep(payload, "gift.icon.url"),
-        getDeep(payload, "gift.icon.url_list.0"),
-        getDeep(payload, "gift.url_list.0"),
-        getDeep(payload, "gift.image.url_list.0"),
-        getDeep(payload, "giftData.giftPictureUrl"),
-        getDeep(payload, "giftData.giftPictureUrlNoWebp"),
-        getDeep(payload, "giftData.giftPicture"),
-        getDeep(payload, "giftData.giftPicture.url_list.0"),
-        getDeep(payload, "giftData.imageUrl"),
-        getDeep(payload, "giftData.image.url"),
-        getDeep(payload, "giftData.image.url_list.0"),
-        getDeep(payload, "imageUrl"),
-        getDeep(payload, "icon")
-      ]
-        .map((v) => normalizeImageUrl(v))
-        .filter(Boolean);
-
-      if (preferred.length > 0) return preferred[0];
-
-      const deepCandidates = collectImageCandidatesFromObject(payload)
-        .map((v) => normalizeImageUrl(v))
-        .filter(Boolean);
-
-      if (deepCandidates.length > 0) {
-        const priority = deepCandidates.find((url) => looksLikeImageUrl(url));
-        return priority || deepCandidates[0];
-      }
-
-      return "";
-    }
-
-    function extractStreakValue(payload) {
-      return Math.max(1, asNumber(firstNonEmpty(
-        getDeep(payload, "streakCount"),
-        getDeep(payload, "streak"),
-        getDeep(payload, "repeatCount"),
-        getDeep(payload, "repeat_count"),
-        getDeep(payload, "comboCount"),
-        getDeep(payload, "combo")
-      )) || 1);
-    }
-
-    function getTopEntry(map) {
-      let topNick = "";
-      let topValue = 0;
-      map.forEach((value, nick) => {
-        if (value > topValue) {
-          topValue = value;
-          topNick = nick;
-        }
-      });
-      return { nick: topNick, value: topValue };
-    }
-
-    function syncTopFromMaps() {
-      const topGift = getTopEntry(giftTotalsByUser);
-      const topStreak = getTopEntry(streakBestByUser);
-
-      tops.giftNick = topGift.nick;
-      tops.giftCoins = Math.round(topGift.value);
-      tops.streakNick = topStreak.nick;
-      tops.streakCount = Math.round(topStreak.value);
-
-      if (topGift.nick && giftMetaByUser.has(topGift.nick)) {
-        const meta = giftMetaByUser.get(topGift.nick);
-        tops.giftName = meta.name || "Gift";
-        tops.giftImageUrl = meta.imageUrl || "";
-      } else {
-        tops.giftName = "No gifts yet";
-        tops.giftImageUrl = "";
-      }
-
-      if (topStreak.nick && streakMetaByUser.has(topStreak.nick)) {
-        const streakMeta = streakMetaByUser.get(topStreak.nick);
-        tops.streakCoins = Math.round(streakMeta.coins || 0);
-        tops.streakGiftName = streakMeta.name || "Gift";
-        tops.streakImageUrl = streakMeta.imageUrl || "";
-      } else if (topStreak.nick && giftMetaByUser.has(topStreak.nick)) {
-        const fallbackMeta = giftMetaByUser.get(topStreak.nick);
-        tops.streakCoins = 0;
-        tops.streakGiftName = fallbackMeta.name || "Gift";
-        tops.streakImageUrl = fallbackMeta.imageUrl || "";
-      } else {
-        tops.streakCoins = 0;
-        tops.streakGiftName = "No gifts yet";
-        tops.streakImageUrl = "";
-      }
-
-      renderTops();
-    }
-
-    function processEventMessage(rawMessage) {
-      const msg = normalizeMessage(rawMessage);
-      if (!msg) return;
-
-      const payload = firstNonEmpty(
-        msg.eventData,
-        getDeep(msg, "data.eventData"),
-        msg.data,
-        msg.payload,
-        msg.args,
-        msg
-      );
-      if (!payload || typeof payload !== "object") return;
-
-      const eventType = detectEventType(msg, payload);
-      if (!eventType) return;
-
-      const nick = extractNick(payload);
-      if (!nick) return;
-
-      if (eventType === "gift") {
-        const score = extractGiftScore(payload);
-        const giftName = extractGiftName(payload);
-        const giftImage = extractGiftImage(payload);
-        const streakFromGift = extractStreakValue(payload);
-
-        giftTotalsByUser.set(nick, (giftTotalsByUser.get(nick) || 0) + score);
-        giftMetaByUser.set(nick, {
-          name: giftName,
-          imageUrl: giftImage
-        });
-        rememberGiftImageByName(giftName, giftImage);
-
-        streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streakFromGift));
-        const existingStreakMeta = streakMetaByUser.get(nick) || { streak: 0, coins: 0, name: "", imageUrl: "" };
-        if (
-          streakFromGift > existingStreakMeta.streak ||
-          (streakFromGift === existingStreakMeta.streak && score > existingStreakMeta.coins)
-        ) {
-          streakMetaByUser.set(nick, {
-            streak: streakFromGift,
-            coins: score,
-            name: giftName,
-            imageUrl: giftImage
-          });
-        }
-
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] gift", { nick, score, streakFromGift, giftName, giftImage, payload });
-        }
-      }
-
-      if (eventType === "streak") {
-        const streak = extractStreakValue(payload);
-        const maybeGiftName = extractGiftName(payload);
-        const maybeGiftImage = extractGiftImage(payload);
-        const maybeCoins = extractGiftScore(payload);
-        streakBestByUser.set(nick, Math.max(streakBestByUser.get(nick) || 0, streak));
-        const existingStreakMeta = streakMetaByUser.get(nick) || { streak: 0, coins: 0, name: "", imageUrl: "" };
-        if (streak > existingStreakMeta.streak) {
-          streakMetaByUser.set(nick, {
-            streak,
-            coins: maybeCoins || existingStreakMeta.coins || 0,
-            name: maybeGiftName || existingStreakMeta.name || "",
-            imageUrl: maybeGiftImage || existingStreakMeta.imageUrl || ""
-          });
-        } else if (!existingStreakMeta.imageUrl && maybeGiftImage) {
-          streakMetaByUser.set(nick, {
-            ...existingStreakMeta,
-            name: maybeGiftName || existingStreakMeta.name,
-            imageUrl: maybeGiftImage
-          });
-        }
-        if (maybeGiftName && maybeGiftImage) {
-          rememberGiftImageByName(maybeGiftName, maybeGiftImage);
-        }
-
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] streak", { nick, streak, maybeGiftName, maybeGiftImage, payload });
-        }
-      }
-
-      syncTopFromMaps();
-    }
-
-    function scheduleReconnect() {
-      if (!liveSocketConfig.enabled) return;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(connectLiveSocket, liveSocketConfig.reconnectMs);
-    }
-
-    function connectLiveSocket() {
-      if (!liveSocketConfig.enabled || !("WebSocket" in window)) return;
-      if (liveSocket && (liveSocket.readyState === WebSocket.OPEN || liveSocket.readyState === WebSocket.CONNECTING)) return;
-
-      try {
-        liveSocket = new WebSocket(liveSocketConfig.url);
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] connecting", liveSocketConfig.url);
-        }
-      } catch {
-        scheduleReconnect();
-        return;
-      }
-
-      liveSocket.onopen = () => {
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] connected");
-        }
-      };
-
-      liveSocket.onmessage = (event) => {
-        processEventMessage(event.data);
-      };
-
-      liveSocket.onclose = () => {
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] socket closed, reconnecting...");
-        }
-        scheduleReconnect();
-      };
-
-      liveSocket.onerror = () => {
-        if (debugConsole) {
-          console.log("[ACHIEVEMENT] socket error");
-        }
-        try {
-          liveSocket.close();
-        } catch {
-          scheduleReconnect();
-        }
-      };
-    }
-
-    connectLiveSocket();
-
-    // Проверка в консоли:
-    // window.achievementDebug.test()
-    // window.achievementDebug.state()
-    // window.achievementDebug.push({...raw event...})
-    window.achievementDebug = {
-      state: () => ({
-        tops: { ...tops },
-        gifts: Object.fromEntries(giftTotalsByUser),
-        streaks: Object.fromEntries(streakBestByUser),
-        streakMeta: Object.fromEntries(streakMetaByUser),
-        knownGiftImages: Object.fromEntries(knownGiftImages)
-      }),
-      test: () => {
-        window.updateAchievementTops({
-          streakNick: "Mega_Player_1",
-          streakCount: 9,
-          streakCoins: 77,
-          streakGiftName: "Rose",
-          streakImageUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/resource/1d067d13988e8754ed6adbebd89b9ee8.png~tplv-obj.webp",
-          giftNick: "KZX",
-          giftCoins: 120,
-          giftName: "Rose",
-          giftImageUrl: "https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/ce1f8f8ef476f0ebf1217f88e4f5f8d8~tplv-obj.image"
-        });
-      },
-      push: (raw) => processEventMessage(raw)
-    };
 
     function randomDelay() {
       return Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
@@ -1395,7 +285,7 @@
       }, fadeMs);
     }
 
-    setTimeout(rotateText, 4600);
+    setTimeout(rotateText, 6000);
   </script>
 </body>
 </html>
